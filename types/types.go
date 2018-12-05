@@ -53,10 +53,10 @@ type World struct {
 }
 
 type Player struct {
-	//TODO: duration??
-	Time time.Duration
+	Duration time.Duration
 	Name string
 	Side Side
+	LastAction time.Time
 }
 
 type Action struct {

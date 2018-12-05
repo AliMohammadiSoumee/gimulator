@@ -12,7 +12,6 @@ var (
 type actionResult string
 
 const (
-	outOfTurn            actionResult = "outOfTurn"
 	validActionWithPrice actionResult = "validActionWithPrice"
 	validAction          actionResult = "validAction"
 	invalidAction        actionResult = "invalidAction"
@@ -21,9 +20,6 @@ const (
 )
 
 func judge(action types.Action, world types.World) actionResult {
-	if action.Player.Name != world.Turn.Name {
-		return outOfTurn
-	}
 	if world.BallPos.NotEqual(action.From) {
 		return invalidAction
 	}
