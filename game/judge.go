@@ -77,10 +77,9 @@ func createValidMoves(ball types.State, moves[]types.Move) []types.Move {
 }
 
 func createPlaygroundAngles(moves []types.Move) [][]int {
-	//FIXME: 30 ???
-	var playground = make([][]int, 30)
-	for i := 0; i < 30; i++ {
-		playground[i] = make([]int, 30, 0)
+	var playground = make([][]int, types.HeightOfMap + 1)
+	for i := 0; i < types.HeightOfMap + 1; i++ {
+		playground[i] = make([]int, types.WidthOfMap + 1, 0)
 	}
 
 	for _, move := range moves {

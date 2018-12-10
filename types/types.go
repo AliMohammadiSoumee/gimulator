@@ -7,6 +7,9 @@ type Position string
 const (
 	Upper Position = "upperPlace"
 	Lower Position = "lowerPlace"
+
+	HeightOfMap = 13
+	WidthOfMap = 11
 )
 
 type Side struct {
