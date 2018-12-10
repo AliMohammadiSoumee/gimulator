@@ -1,15 +1,15 @@
-package types
+package game
 
 import "time"
 
 type Position string
 
 const (
-	Upper Position = "upperPlace"
-	Lower Position = "lowerPlace"
+	UpperPos Position = "upperPlace"
+	LowerPos Position = "lowerPlace"
 
 	HeightOfMap = 13
-	WidthOfMap = 11
+	WidthOfMap  = 11
 )
 
 type Side struct {
@@ -55,15 +55,24 @@ type World struct {
 	BallPos State  `json:"ball_pos"`
 }
 
-type Player struct {
-	Duration time.Duration
-	Name string
-	Side Side
-	LastAction time.Time
-}
-
 type Action struct {
 	Player Player `json:"player"`
 	From   State  `json:"from"`
 	To     State  `json:"to"`
+}
+
+type Player struct {
+	Duration   time.Duration
+	Name       string
+	Side       Side
+	LastAction time.Time
+}
+
+func (p *Player) UpdateTimer() {
+	now := time.Now()
+	p.Duration += now.Sub(p.LastAction)
+}
+
+func (p *Player) SetLastAction() {
+	p.LastAction = time.Now()
 }

@@ -1,9 +1,9 @@
 package game
 
 import (
-	"github.com/alidadar7676/gimulator/types"
 	"fmt"
 	"time"
+	"math/rand"
 )
 
 type turnState string
@@ -15,10 +15,10 @@ const (
 )
 
 type players struct {
-	p1, p2 types.Player
+	p1, p2 Player
 }
 
-func (p *players) changeTurn(player types.Player) types.Player {
+func (p *players) changeTurn(player Player) Player {
 	if player.Name == p.p1.Name {
 		return p.p2
 	} else {
@@ -27,22 +27,67 @@ func (p *players) changeTurn(player types.Player) types.Player {
 }
 
 func (p *players) updateTime(name string) {
-	now := time.Now()
 	if name == p.p1.Name {
-		p.p1.Duration += now.Sub(p.p1.LastAction)
+		p.p1.UpdateTimer()
 	} else {
-		p.p2.Duration += now.Sub(p.p2.LastAction)
+		p.p2.UpdateTimer()
 	}
-	p.p1.LastAction = now
-	p.p2.LastAction = now
+}
+
+func (p *players) setLastAction(name string) {
+	if name == p.p1.Name {
+		p.p1.SetLastAction()
+	} else {
+		p.p2.SetLastAction()
+	}
 }
 
 type game struct {
 	players players
 }
 
+func createNewGame(pName1, pName2 string) (*World, *game) {
+	rand.Seed(time.Now().UnixNano())
+	rnd := rand.Intn(2)
+	var player1, player2 Player
 
-func (g *game) update(action types.Action, world types.World) (types.World, error) {
+	if rnd == 0 {
+		player1 = CreateNewPlayer(pName1, LowerPos)
+		player2 = CreateNewPlayer(pName2, UpperPos)
+	} else {
+		player1 = CreateNewPlayer(pName1, LowerPos)
+		player2 = CreateNewPlayer(pName2, UpperPos)
+	}
+	gm := game{players: players{p1: player1, p2: player2}}
+
+	world := World{
+		Moves: initMoves,
+		Turn: player1,
+		BallPos: State{X: 6, Y: 7},
+	}
+
+	gm.players.setLastAction(player1.Name)
+
+	return &world, &gm
+}
+
+func CreateNewPlayer(name string, pos Position) Player {
+	var side Side
+	if pos == UpperPos {
+		side = UpperSide
+	} else {
+		side = LowerSide
+	}
+
+	return Player{
+		Name: name,
+		Side: side,
+		Duration: time.Second * 5,
+		LastAction: time.Now(),
+	}
+}
+
+func (g *game) update(action Action, world World) (World, error) {
 	if action.Player.Name != world.Turn.Name {
 		return world, fmt.Errorf("outOfTurn")
 	}
@@ -64,13 +109,15 @@ func (g *game) update(action types.Action, world types.World) (types.World, erro
 		world = g.updateWorld(action, world, noTurn)
 	}
 
+	g.players.setLastAction(action.Player.Name)
+
 	return world, nil
 }
 
-func (g *game)updateWorld(action types.Action, world types.World, turnState turnState) types.World {
+func (g *game) updateWorld(action Action, world World, turnState turnState) World {
 	world.BallPos = action.To
 
-	move := types.Move{
+	move := Move{
 		A: action.From,
 		B: action.To,
 	}
@@ -80,7 +127,7 @@ func (g *game)updateWorld(action types.Action, world types.World, turnState turn
 	case changeTurn:
 		world.Turn = g.players.changeTurn(world.Turn)
 	case noTurn:
-		world.Turn = types.Player{}
+		world.Turn = Player{}
 	}
 
 	return world
