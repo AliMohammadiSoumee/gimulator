@@ -13,9 +13,9 @@ const (
 )
 
 type Side struct {
-	Pos        Position
-	WinStates  []State
-	LoseStates []State
+	Pos        Position `json:"pos"`
+	WinStates  []State  `json:"win_states"`
+	LoseStates []State  `json:"lose_states"`
 }
 
 type State struct {
@@ -53,6 +53,11 @@ type World struct {
 	Moves   []Move `json:"moves"`
 	Turn    Player `json:"turn"`
 	BallPos State  `json:"ball_pos"`
+	Winner  Player `json:"winner"`
+}
+
+func (w *World) SetWinner(p Player) {
+	w.Winner = p
 }
 
 type Action struct {
@@ -62,17 +67,27 @@ type Action struct {
 }
 
 type Player struct {
-	Duration   time.Duration
-	Name       string
-	Side       Side
-	LastAction time.Time
+	Duration time.Duration `json:"duration"`
+	Name     string        `json:"name"`
+	Side     Side          `json:"side"`
 }
 
-func (p *Player) UpdateTimer() {
+func (p *Player) UpdateTimer(t time.Time) {
 	now := time.Now()
-	p.Duration += now.Sub(p.LastAction)
+	p.Duration -= now.Sub(t)
 }
 
-func (p *Player) SetLastAction() {
-	p.LastAction = time.Now()
+func CreateNewPlayer(name string, pos Position) Player {
+	var side Side
+	if pos == UpperPos {
+		side = UpperSide
+	} else {
+		side = LowerSide
+	}
+
+	return Player{
+		Name:     name,
+		Side:     side,
+		Duration: time.Minute * 5,
+	}
 }

@@ -20,8 +20,8 @@ func judge(action Action, world World) actionResult {
 		return invalidAction
 	}
 
-	playgroundAngs := createPlaygroundAngles(world.Moves)
 	validMoves := createValidMoves(world.BallPos, world.Moves)
+	playgroundAngs := createPlaygroundAngles(world.Moves)
 	playerMove := Move{
 		A: action.From,
 		B: action.To,
