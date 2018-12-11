@@ -20,7 +20,9 @@ type Simulator struct {
 	watcher map[string][]chan Reconcile
 }
 
-func New() *Simulator {
+var _ Gimulator = (*Simulator)(nil)
+
+func NewSimulator() *Simulator {
 	return &Simulator{
 		storage: make(map[string]interface{}),
 		tasks:   make(chan task, TaskBufferSize),
@@ -41,8 +43,9 @@ func (s *Simulator) Get(key string) (interface{}, error) {
 	return result.value, result.err
 }
 
-func (s *Simulator) Set(key string, object interface{}) {
+func (s *Simulator) Set(key string, object interface{}) error {
 	<-s.send(msgSet{key: key, object: object})
+	return nil
 }
 
 func (s *Simulator) Delete(key string) error {
@@ -50,8 +53,9 @@ func (s *Simulator) Delete(key string) error {
 	return result.err
 }
 
-func (s *Simulator) Watch(key string, ch chan Reconcile) {
+func (s *Simulator) Watch(key string, ch chan Reconcile) error {
 	<-s.send(msgWatch{key: key, ch: ch})
+	return nil
 }
 
 func (s *Simulator) send(msg interface{}) chan result {
