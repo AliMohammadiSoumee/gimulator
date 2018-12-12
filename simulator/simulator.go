@@ -18,6 +18,7 @@ type Simulator struct {
 	storage map[string]interface{}
 	tasks   chan task
 	watcher map[string][]chan Reconcile
+	running bool
 }
 
 var _ Gimulator = (*Simulator)(nil)
@@ -32,6 +33,11 @@ func NewSimulator() *Simulator {
 
 func (s *Simulator) Run() {
 	go func() {
+		s.running = true
+		defer func() {
+			s.running = false
+		}()
+
 		for t := range s.tasks {
 			s.loop(t)
 		}
@@ -59,6 +65,10 @@ func (s *Simulator) Watch(key string, ch chan Reconcile) error {
 }
 
 func (s *Simulator) send(msg interface{}) chan result {
+	if !s.running {
+		panic("can not send message: simulator is not running")
+	}
+
 	ch := make(chan result)
 	s.tasks <- task{
 		input:  msg,
@@ -91,6 +101,9 @@ func (s *Simulator) loop(t task) {
 			Action: "delete",
 		}
 		result, err = nil, s.delete(msg.key)
+	case msgWatch:
+		s.watch(msg.key, msg.ch)
+		result, err = nil, nil
 	default:
 		result, err = nil, fmt.Errorf("undefined message type")
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 	"time"
 )
@@ -15,11 +16,19 @@ type HTTPSimulator struct {
 
 var _ http.Handler = (*HTTPSimulator)(nil)
 
+func NewHTTPSimulator(gimulator Gimulator) *HTTPSimulator {
+	h := &HTTPSimulator{
+		Gimulator: gimulator,
+	}
+	h.setRouter()
+	return h
+}
+
 func (h *HTTPSimulator) ListenAndServe(bind string) error {
 	if h.router == nil {
 		h.setRouter()
 	}
-	return http.ListenAndServe("", h)
+	return http.ListenAndServe(bind, h)
 }
 
 func (h *HTTPSimulator) setRouter() {
@@ -107,6 +116,7 @@ func (w *HTTPWatcher) Run() {
 	for {
 		select {
 		case r := <-w.ch:
+			log.Println("SENDING", r)
 			w.conn.WriteJSON(r)
 		case <-t.C:
 			w.conn.WriteMessage(websocket.PingMessage, []byte{})
