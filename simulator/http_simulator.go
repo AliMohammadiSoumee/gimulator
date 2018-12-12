@@ -50,6 +50,9 @@ func (h *HTTPSimulator) setRouter() {
 
 	// Watch
 	r.HandleFunc("/{namespace}/{type}/{name}/watch", h.handleWatch).Methods("GET")
+	r.HandleFunc("/{namespace}/{type}/watch", h.handleWatch).Methods("GET")
+	r.HandleFunc("/{namespace}/watch", h.handleWatch).Methods("GET")
+	r.HandleFunc("/watch", h.handleWatch).Methods("GET")
 
 	h.router = r
 }
@@ -117,21 +120,22 @@ func (h *HTTPSimulator) handleDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPSimulator) handleWatch(w http.ResponseWriter, r *http.Request) {
-	key := Key{
-		Namespace: mux.Vars(r)["namespace"],
-		Type:      mux.Vars(r)["type"],
-		Name:      mux.Vars(r)["name"],
-	}
-
-	ch := make(chan Reconcile, 32)
-	err := h.Gimulator.Watch(key, ch)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
 	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
+		return
+	}
+
+	var filter Object
+	if err := conn.ReadJSON(&filter); err != nil {
+		conn.Close()
+		return
+	}
+
+	ch := make(chan Reconcile, 32)
+	err = h.Gimulator.Watch(filter, ch)
+	if err != nil {
+		conn.Close()
 		return
 	}
 

@@ -25,19 +25,19 @@ type Reconcile struct {
 }
 
 type Simulator struct {
-	storage map[Key]Object
-	tasks   chan task
-	watcher map[Key][]chan Reconcile
-	running bool
+	storage  map[Key]Object
+	tasks    chan task
+	watchers []watcher
+	running  bool
 }
 
 var _ Gimulator = (*Simulator)(nil)
 
 func NewSimulator() *Simulator {
 	return &Simulator{
-		storage: make(map[Key]Object),
-		tasks:   make(chan task, TaskBufferSize),
-		watcher: make(map[Key][]chan Reconcile),
+		storage:  make(map[Key]Object),
+		tasks:    make(chan task, TaskBufferSize),
+		watchers: make([]watcher, 0),
 	}
 }
 
@@ -85,8 +85,8 @@ func (s *Simulator) Delete(key Key) error {
 	return result.err
 }
 
-func (s *Simulator) Watch(key Key, ch chan Reconcile) error {
-	<-s.send(msgWatch{key: key, ch: ch})
+func (s *Simulator) Watch(filter Object, ch chan Reconcile) error {
+	<-s.send(msgWatch{filter: filter, ch: ch})
 	return nil
 }
 
@@ -128,7 +128,7 @@ func (s *Simulator) loop(t task) {
 		}
 		result, err = nil, s.delete(msg.key)
 	case msgWatch:
-		s.watch(msg.key, msg.ch)
+		s.watch(msg.filter, msg.ch)
 		result, err = nil, nil
 	default:
 		result, err = nil, fmt.Errorf("undefined message type")
@@ -150,17 +150,7 @@ func (s *Simulator) get(key Key) (Object, error) {
 func (s *Simulator) find(filter Object) ([]Object, error) {
 	result := make([]Object, 0)
 	for _, object := range s.storage {
-		fmt.Println(object, "------", filter)
-		if filter.Namespace != "" && filter.Namespace != object.Namespace {
-			continue
-		}
-		if filter.Type != "" && filter.Type != object.Type {
-			continue
-		}
-		if filter.Name != "" && filter.Name != object.Name {
-			continue
-		}
-		if match(filter.Value, object.Value) {
+		if matchObject(filter, object) {
 			result = append(result, object)
 		}
 	}
@@ -179,24 +169,27 @@ func (s *Simulator) delete(key Key) error {
 	return nil
 }
 
-func (s *Simulator) watch(key Key, ch chan Reconcile) {
-	if _, exists := s.watcher[key]; !exists {
-		s.watcher[key] = make([]chan Reconcile, 0)
-	}
-	s.watcher[key] = append(s.watcher[key], ch)
+func (s *Simulator) watch(filter Object, ch chan Reconcile) {
+	s.watchers = append(s.watchers, watcher{
+		filter: filter,
+		ch:     ch,
+	})
 }
 
 func (s *Simulator) reconcile(reconcile Reconcile) {
-	channels, exists := s.watcher[reconcile.Object.Key]
-	if !exists {
-		return
-	}
-	for _, ch := range channels {
-		select {
-		case ch <- reconcile:
-		default:
+	for _, w := range s.watchers {
+		if matchObject(w.filter, reconcile.Object) {
+			select {
+			case w.ch <- reconcile:
+			default:
+			}
 		}
 	}
+}
+
+type watcher struct {
+	filter Object
+	ch     chan Reconcile
 }
 
 type result struct {
@@ -234,6 +227,6 @@ type msgFind struct {
 }
 
 type msgWatch struct {
-	key Key
-	ch  chan Reconcile
+	filter Object
+	ch     chan Reconcile
 }

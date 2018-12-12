@@ -107,9 +107,14 @@ func (c *Client) Delete(key Key) error {
 	return nil
 }
 
-func (c *Client) Watch(key Key, ch chan Reconcile) error {
-	ws, _, err := websocket.DefaultDialer.Dial(c.url("WATCH", key), nil)
+func (c *Client) Watch(filter Object, ch chan Reconcile) error {
+	ws, _, err := websocket.DefaultDialer.Dial(c.url("WATCH", Key{}), nil)
 	if err != nil {
+		return err
+	}
+
+	if err := ws.WriteJSON(filter); err != nil {
+		ws.Close()
 		return err
 	}
 
@@ -144,7 +149,7 @@ func (c *Client) url(action string, key Key) string {
 		u = url.URL{
 			Scheme: "ws",
 			Host:   c.Addr,
-			Path:   fmt.Sprintf("/%s/%s/%s/watch", key.Namespace, key.Type, key.Name),
+			Path:   "/watch",
 		}
 	default:
 		panic("unknown action")

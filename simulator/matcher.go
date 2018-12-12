@@ -1,8 +1,22 @@
+// TODO: Write test for this file
 package simulator
 
 import (
 	"reflect"
 )
+
+func matchObject(expected, actual Object) bool {
+	if expected.Namespace != "" && expected.Namespace != actual.Namespace {
+		return false
+	}
+	if expected.Type != "" && expected.Type != actual.Type {
+		return false
+	}
+	if expected.Name != "" && expected.Name != actual.Name {
+		return false
+	}
+	return match(expected.Value, actual.Value)
+}
 
 func match(expected, actual interface{}) bool {
 	if expected == nil {
@@ -17,7 +31,16 @@ func match(expected, actual interface{}) bool {
 	return matchValue(l, r)
 }
 
+// Note: we assume all interfaces are `interface{}`
 func matchValue(expected, actual reflect.Value) bool {
+	if expected.Kind() == reflect.Interface {
+		return matchValue(expected.Elem(), actual)
+	}
+
+	if actual.Kind() == reflect.Interface {
+		return matchValue(expected, actual.Elem())
+	}
+
 	if expected.Kind() != actual.Kind() {
 		return false
 	}

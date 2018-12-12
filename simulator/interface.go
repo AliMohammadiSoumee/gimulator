@@ -17,7 +17,7 @@ type Deleter interface {
 }
 
 type Watcher interface {
-	Watch(key Key, ch chan Reconcile) error
+	Watch(filter Object, ch chan Reconcile) error
 }
 
 // FIXME: WTF is this name?

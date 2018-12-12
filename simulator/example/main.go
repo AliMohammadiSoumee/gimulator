@@ -28,12 +28,28 @@ func main() {
 		err error
 	)
 
+	ch := make(chan simulator.Reconcile)
+	err = c.Watch(simulator.Object{
+		Key: simulator.Key{
+			Namespace: "ns",
+			Type:      "integer",
+		},
+		Value: map[string]interface{}{
+			"hello": "world",
+		}}, ch)
+	fmt.Println("HUH?", err)
+
+	go func() {
+		for r := range ch {
+			fmt.Println("Watched", r)
+		}
+	}()
+
 	hellokey := simulator.Key{
 		Namespace: "ns",
 		Type:      "integer",
 		Name:      "hello",
 	}
-
 	hello := simulator.Object{
 		Key:   hellokey,
 		Value: map[string]string{"hello": "world"},
@@ -41,15 +57,7 @@ func main() {
 	err = c.Set(hello)
 	fmt.Println(ans, err)
 
-	hello.Key.Name = "hello2"
-	hello.Value = map[string]string{"hello": "world", "best": "size"}
-	err = c.Set(hello)
-	fmt.Println(ans, err)
-
-	ans, err = c.Find(simulator.Object{
-		Key:   simulator.Key{},
-		Value: map[string]string{"hello": "world"},
-	})
+	ans, err = c.Get(simulator.Key{Name: "hello", Type: "integer", Namespace: "ns"})
 	fmt.Println(ans, err)
 
 	fmt.Scanln()
