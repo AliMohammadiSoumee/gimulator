@@ -2,11 +2,11 @@ package simulator
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 type HTTPSimulator struct {
@@ -116,7 +116,6 @@ func (w *HTTPWatcher) Run() {
 	for {
 		select {
 		case r := <-w.ch:
-			log.Println("SENDING", r)
 			w.conn.WriteJSON(r)
 		case <-t.C:
 			w.conn.WriteMessage(websocket.PingMessage, []byte{})
