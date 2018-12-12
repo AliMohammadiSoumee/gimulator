@@ -28,42 +28,29 @@ func main() {
 		err error
 	)
 
-	ans, err = c.Get("hello")
-	fmt.Println("GET key HELLO:", ans, err)
-
-	err = c.Set("hello", map[string]string{"hello": "world"})
-	fmt.Println("SET key HELLO:", err)
-
-	ans, err = c.Get("hello")
-	fmt.Println("GET key HELLO:", ans, err)
-
-	ch := make(chan simulator.Reconcile, 32)
-	err = c.Watch("hello", ch)
-	fmt.Println("WATCH key hello:", err)
-	go func() {
-		for r := range ch {
-			fmt.Println("Watched", r)
-		}
-	}()
-
-	for i := 0; i < 4; i++ {
-		time.Sleep(time.Second * 1)
-		err = c.Set("hello", map[string]int{"hello": i})
-		fmt.Println("SET key hello:", err)
+	hellokey := simulator.Key{
+		Namespace: "ns",
+		Type:      "integer",
+		Name:      "hello",
 	}
 
-	for i := 0; i < 4; i++ {
-		err = c.Set(fmt.Sprintf("hello%d", i), map[string]int{"hello": i})
+	hello := simulator.Object{
+		Key:   hellokey,
+		Value: map[string]string{"hello": "world"},
 	}
+	err = c.Set(hello)
+	fmt.Println(ans, err)
 
-	ans, err = c.Find(map[string]int{"hello": 3})
-	fmt.Println("FIND for {hello 9}:", ans, err)
+	hello.Key.Name = "hello2"
+	hello.Value = map[string]string{"hello": "world", "best": "size"}
+	err = c.Set(hello)
+	fmt.Println(ans, err)
 
-	err = c.Delete("hello")
-	fmt.Println("DELETE key hello:", err)
-
-	ans, err = c.Get("hello")
-	fmt.Println("GET key HELLO:", ans, err)
+	ans, err = c.Find(simulator.Object{
+		Key:   simulator.Key{},
+		Value: map[string]string{"hello": "world"},
+	})
+	fmt.Println(ans, err)
 
 	fmt.Scanln()
 }

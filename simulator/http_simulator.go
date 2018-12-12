@@ -33,16 +33,33 @@ func (h *HTTPSimulator) ListenAndServe(bind string) error {
 
 func (h *HTTPSimulator) setRouter() {
 	r := mux.NewRouter()
-	r.HandleFunc("/{key}/", h.handleGet).Methods("GET")
-	r.HandleFunc("/{key}/find", h.handleFind).Methods("POST")
-	r.HandleFunc("/{key}/", h.handleSet).Methods("POST")
-	r.HandleFunc("/{key}/", h.handleDelete).Methods("DELETE")
-	r.HandleFunc("/{key}/watch", h.handleWatch).Methods("GET")
+
+	// Get
+	r.HandleFunc("/{namespace}/{type}/{name}", h.handleGet).Methods("GET")
+
+	// Find
+	r.HandleFunc("/{namespace}/{type}/find", h.handleFind).Methods("POST")
+	r.HandleFunc("/{namespace}/find", h.handleFind).Methods("POST")
+	r.HandleFunc("/find", h.handleFind).Methods("POST")
+
+	// Set
+	r.HandleFunc("/{namespace}/{type}/{name}", h.handleSet).Methods("POST")
+
+	// Delete
+	r.HandleFunc("/{namespace}/{type}/{name}", h.handleDelete).Methods("DELETE")
+
+	// Watch
+	r.HandleFunc("/{namespace}/{type}/{name}/watch", h.handleWatch).Methods("GET")
+
 	h.router = r
 }
 
 func (h *HTTPSimulator) handleGet(w http.ResponseWriter, r *http.Request) {
-	key := mux.Vars(r)["key"]
+	key := Key{
+		Namespace: mux.Vars(r)["namespace"],
+		Type:      mux.Vars(r)["type"],
+		Name:      mux.Vars(r)["name"],
+	}
 	result, err := h.Gimulator.Get(key)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -55,7 +72,7 @@ func (h *HTTPSimulator) handleGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPSimulator) handleFind(w http.ResponseWriter, r *http.Request) {
-	var filter interface{}
+	var filter Object
 	if err := json.NewDecoder(r.Body).Decode(&filter); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -73,15 +90,13 @@ func (h *HTTPSimulator) handleFind(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPSimulator) handleSet(w http.ResponseWriter, r *http.Request) {
-	key := mux.Vars(r)["key"]
-
-	var object interface{}
+	var object Object
 	if err := json.NewDecoder(r.Body).Decode(&object); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	err := h.Gimulator.Set(key, object)
+	err := h.Gimulator.Set(object)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -89,7 +104,12 @@ func (h *HTTPSimulator) handleSet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPSimulator) handleDelete(w http.ResponseWriter, r *http.Request) {
-	key := mux.Vars(r)["key"]
+	key := Key{
+		Namespace: mux.Vars(r)["namespace"],
+		Type:      mux.Vars(r)["type"],
+		Name:      mux.Vars(r)["name"],
+	}
+
 	err := h.Gimulator.Delete(key)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -97,7 +117,11 @@ func (h *HTTPSimulator) handleDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPSimulator) handleWatch(w http.ResponseWriter, r *http.Request) {
-	key := mux.Vars(r)["key"]
+	key := Key{
+		Namespace: mux.Vars(r)["namespace"],
+		Type:      mux.Vars(r)["type"],
+		Name:      mux.Vars(r)["name"],
+	}
 
 	ch := make(chan Reconcile, 32)
 	err := h.Gimulator.Watch(key, ch)

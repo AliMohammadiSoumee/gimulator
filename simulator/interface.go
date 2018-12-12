@@ -1,23 +1,23 @@
 package simulator
 
 type Getter interface {
-	Get(key string) (interface{}, error)
+	Get(key Key) (*Object, error)
 }
 
 type Finder interface {
-	Find(filter interface{}) ([]interface{}, error)
+	Find(filter Object) ([]Object, error)
 }
 
 type Setter interface {
-	Set(key string, object interface{}) error
+	Set(object Object) error
 }
 
 type Deleter interface {
-	Delete(key string) error
+	Delete(key Key) error
 }
 
 type Watcher interface {
-	Watch(key string, ch chan Reconcile) error
+	Watch(key Key, ch chan Reconcile) error
 }
 
 // FIXME: WTF is this name?

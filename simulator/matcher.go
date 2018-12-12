@@ -4,22 +4,12 @@ import (
 	"reflect"
 )
 
-type Matcher struct {
-	Filter interface{}
-}
-
-func (m *Matcher) match(left interface{}) bool {
-	if m.Filter == nil {
+func match(expected, actual interface{}) bool {
+	if expected == nil {
 		return true
 	}
-	return match(left, m.Filter)
-}
 
-func match(left, right interface{}) bool {
-	if left == nil || right == nil {
-		return left == right
-	}
-	l, r := reflect.ValueOf(left), reflect.ValueOf(right)
+	l, r := reflect.ValueOf(expected), reflect.ValueOf(actual)
 
 	if l.Type() != r.Type() {
 		return false
@@ -27,64 +17,61 @@ func match(left, right interface{}) bool {
 	return matchValue(l, r)
 }
 
-func matchValue(left, right reflect.Value) bool {
-	if !left.IsValid() && right.IsValid() {
-		return false
-	}
-	if left.Type() != right.Type() {
+func matchValue(expected, actual reflect.Value) bool {
+	if expected.Kind() != actual.Kind() {
 		return false
 	}
 
-	switch left.Kind() {
+	switch expected.Kind() {
 	case reflect.Array:
-		for i := 0; i < left.Len(); i++ {
-			if !matchValue(left.Index(i), right.Index(i)) {
+		for i := 0; i < expected.Len(); i++ {
+			if !matchValue(expected.Index(i), actual.Index(i)) {
 				return false
 			}
 		}
 		return true
 	case reflect.Slice:
-		if left.IsNil() != right.IsNil() {
+		if expected.IsNil() != actual.IsNil() {
 			return false
 		}
-		if left.Len() != right.Len() {
+		if expected.Len() != actual.Len() {
 			return false
 		}
-		if left.Pointer() == right.Pointer() {
+		if expected.Pointer() == actual.Pointer() {
 			return true
 		}
-		for i := 0; i < left.Len(); i++ {
-			if !matchValue(left.Index(i), right.Index(i)) {
+		for i := 0; i < expected.Len(); i++ {
+			if !matchValue(expected.Index(i), actual.Index(i)) {
 				return false
 			}
 		}
 		return true
 	case reflect.Interface:
-		if left.IsNil() || right.IsNil() {
-			return left.IsNil() == right.IsNil()
+		if expected.IsNil() || actual.IsNil() {
+			return expected.IsNil() == actual.IsNil()
 		}
-		return matchValue(left.Elem(), right.Elem())
+		return matchValue(expected.Elem(), actual.Elem())
 	case reflect.Ptr:
-		if left.Pointer() == right.Pointer() {
+		if expected.Pointer() == actual.Pointer() {
 			return true
 		}
-		return matchValue(left.Elem(), right.Elem())
+		return matchValue(expected.Elem(), actual.Elem())
 	case reflect.Map:
-		if left.IsNil() != right.IsNil() {
-			return false
-		}
-		if left.Pointer() == right.Pointer() {
+		if expected.IsNil() {
 			return true
 		}
-		for _, k := range right.MapKeys() {
-			val1 := left.MapIndex(k)
-			val2 := right.MapIndex(k)
+		if expected.Pointer() == actual.Pointer() {
+			return true
+		}
+		for _, k := range expected.MapKeys() {
+			val1 := expected.MapIndex(k)
+			val2 := actual.MapIndex(k)
 			if !val1.IsValid() || !val2.IsValid() || !matchValue(val1, val2) {
 				return false
 			}
 		}
 		return true
 	default:
-		return left.Interface() == right.Interface()
+		return expected.Interface() == actual.Interface()
 	}
 }

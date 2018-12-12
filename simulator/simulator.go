@@ -8,16 +8,26 @@ const (
 	TaskBufferSize = 256
 )
 
+type Key struct {
+	Namespace string
+	Type      string
+	Name      string
+}
+
+type Object struct {
+	Key
+	Value interface{}
+}
+
 type Reconcile struct {
-	Key    string
 	Action string
-	Object interface{}
+	Object Object
 }
 
 type Simulator struct {
-	storage map[string]interface{}
+	storage map[Key]Object
 	tasks   chan task
-	watcher map[string][]chan Reconcile
+	watcher map[Key][]chan Reconcile
 	running bool
 }
 
@@ -25,9 +35,9 @@ var _ Gimulator = (*Simulator)(nil)
 
 func NewSimulator() *Simulator {
 	return &Simulator{
-		storage: make(map[string]interface{}),
+		storage: make(map[Key]Object),
 		tasks:   make(chan task, TaskBufferSize),
-		watcher: make(map[string][]chan Reconcile),
+		watcher: make(map[Key][]chan Reconcile),
 	}
 }
 
@@ -44,34 +54,38 @@ func (s *Simulator) Run() {
 	}()
 }
 
-func (s *Simulator) Get(key string) (interface{}, error) {
+func (s *Simulator) Get(key Key) (*Object, error) {
 	result := <-s.send(msgGet{key: key})
-	return result.value, result.err
+	object, ok := result.value.(Object)
+	if !ok {
+		return nil, fmt.Errorf("unexpected result from get")
+	}
+	return &object, result.err
 }
 
-func (s *Simulator) Find(filter interface{}) ([]interface{}, error) {
+func (s *Simulator) Find(filter Object) ([]Object, error) {
 	result := <-s.send(msgFind{filter: filter})
 	if result.err != nil {
 		return nil, result.err
 	}
-	valueList, ok := result.value.([]interface{})
+	objectList, ok := result.value.([]Object)
 	if !ok {
 		return nil, fmt.Errorf("unexpected result from find")
 	}
-	return valueList, nil
+	return objectList, nil
 }
 
-func (s *Simulator) Set(key string, object interface{}) error {
-	<-s.send(msgSet{key: key, object: object})
+func (s *Simulator) Set(object Object) error {
+	<-s.send(msgSet{key: object.Key, object: object})
 	return nil
 }
 
-func (s *Simulator) Delete(key string) error {
+func (s *Simulator) Delete(key Key) error {
 	result := <-s.send(msgDelete{key: key})
 	return result.err
 }
 
-func (s *Simulator) Watch(key string, ch chan Reconcile) error {
+func (s *Simulator) Watch(key Key, ch chan Reconcile) error {
 	<-s.send(msgWatch{key: key, ch: ch})
 	return nil
 }
@@ -104,14 +118,12 @@ func (s *Simulator) loop(t task) {
 	case msgSet:
 		s.set(msg.key, msg.object)
 		changed = &Reconcile{
-			Key:    msg.key,
 			Action: "set",
 			Object: msg.object,
 		}
 		result, err = nil, nil
 	case msgDelete:
 		changed = &Reconcile{
-			Key:    msg.key,
 			Action: "delete",
 		}
 		result, err = nil, s.delete(msg.key)
@@ -128,29 +140,38 @@ func (s *Simulator) loop(t task) {
 	}
 }
 
-func (s *Simulator) get(key string) (interface{}, error) {
+func (s *Simulator) get(key Key) (Object, error) {
 	if object, exists := s.storage[key]; exists {
 		return object, nil
 	}
-	return nil, fmt.Errorf("object with %v key does not exist", key)
+	return Object{}, fmt.Errorf("object with %v key does not exist", key)
 }
 
-func (s *Simulator) find(filter interface{}) ([]interface{}, error) {
-	result := make([]interface{}, 0)
-	m := &Matcher{Filter: filter}
+func (s *Simulator) find(filter Object) ([]Object, error) {
+	result := make([]Object, 0)
 	for _, object := range s.storage {
-		if m.match(object) {
+		fmt.Println(object, "------", filter)
+		if filter.Namespace != "" && filter.Namespace != object.Namespace {
+			continue
+		}
+		if filter.Type != "" && filter.Type != object.Type {
+			continue
+		}
+		if filter.Name != "" && filter.Name != object.Name {
+			continue
+		}
+		if match(filter.Value, object.Value) {
 			result = append(result, object)
 		}
 	}
 	return result, nil
 }
 
-func (s *Simulator) set(key string, object interface{}) {
+func (s *Simulator) set(key Key, object Object) {
 	s.storage[key] = object
 }
 
-func (s *Simulator) delete(key string) error {
+func (s *Simulator) delete(key Key) error {
 	if _, exists := s.storage[key]; !exists {
 		return fmt.Errorf("object with %v key does not exist", key)
 	}
@@ -158,7 +179,7 @@ func (s *Simulator) delete(key string) error {
 	return nil
 }
 
-func (s *Simulator) watch(key string, ch chan Reconcile) {
+func (s *Simulator) watch(key Key, ch chan Reconcile) {
 	if _, exists := s.watcher[key]; !exists {
 		s.watcher[key] = make([]chan Reconcile, 0)
 	}
@@ -166,7 +187,7 @@ func (s *Simulator) watch(key string, ch chan Reconcile) {
 }
 
 func (s *Simulator) reconcile(reconcile Reconcile) {
-	channels, exists := s.watcher[reconcile.Key]
+	channels, exists := s.watcher[reconcile.Object.Key]
 	if !exists {
 		return
 	}
@@ -196,23 +217,23 @@ func (t task) response(value interface{}, err error) {
 }
 
 type msgGet struct {
-	key string
+	key Key
 }
 
 type msgSet struct {
-	key    string
-	object interface{}
+	key    Key
+	object Object
 }
 
 type msgDelete struct {
-	key string
+	key Key
 }
 
 type msgFind struct {
-	filter interface{}
+	filter Object
 }
 
 type msgWatch struct {
-	key string
+	key Key
 	ch  chan Reconcile
 }

@@ -17,7 +17,7 @@ type Client struct {
 
 var _ Gimulator = (*Client)(nil)
 
-func (c *Client) Get(key string) (interface{}, error) {
+func (c *Client) Get(key Key) (*Object, error) {
 	req, err := http.NewRequest("GET", c.url("GET", key), nil)
 	if err != nil {
 		return nil, err
@@ -32,21 +32,21 @@ func (c *Client) Get(key string) (interface{}, error) {
 		return nil, fmt.Errorf("unsuccessful request")
 	}
 
-	var object interface{}
+	var object Object
 	if err := json.NewDecoder(resp.Body).Decode(&object); err != nil {
 		return nil, err
 	}
 
-	return object, nil
+	return &object, nil
 }
 
-func (c *Client) Find(filter interface{}) ([]interface{}, error) {
+func (c *Client) Find(filter Object) ([]Object, error) {
 	buf := &bytes.Buffer{}
 	if err := json.NewEncoder(buf).Encode(filter); err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", c.url("FIND", "_blank"), buf)
+	req, err := http.NewRequest("POST", c.url("FIND", Key{}), buf)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (c *Client) Find(filter interface{}) ([]interface{}, error) {
 		return nil, fmt.Errorf("unsuccessful request")
 	}
 
-	var objectList []interface{}
+	var objectList []Object
 	if err := json.NewDecoder(resp.Body).Decode(&objectList); err != nil {
 		return nil, err
 	}
@@ -68,13 +68,13 @@ func (c *Client) Find(filter interface{}) ([]interface{}, error) {
 	return objectList, nil
 }
 
-func (c *Client) Set(key string, object interface{}) error {
+func (c *Client) Set(object Object) error {
 	buf := &bytes.Buffer{}
 	if err := json.NewEncoder(buf).Encode(object); err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", c.url("SET", key), buf)
+	req, err := http.NewRequest("POST", c.url("SET", object.Key), buf)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (c *Client) Set(key string, object interface{}) error {
 	return nil
 }
 
-func (c *Client) Delete(key string) error {
+func (c *Client) Delete(key Key) error {
 	req, err := http.NewRequest("DELETE", c.url("DELETE", key), nil)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (c *Client) Delete(key string) error {
 	return nil
 }
 
-func (c *Client) Watch(key string, ch chan Reconcile) error {
+func (c *Client) Watch(key Key, ch chan Reconcile) error {
 	ws, _, err := websocket.DefaultDialer.Dial(c.url("WATCH", key), nil)
 	if err != nil {
 		return err
@@ -129,15 +129,23 @@ func (c *Client) Watch(key string, ch chan Reconcile) error {
 	return nil
 }
 
-func (c *Client) url(action string, key string) string {
+func (c *Client) url(action string, key Key) string {
 	var u url.URL
 	switch strings.ToUpper(action) {
 	case "GET", "SET", "DELETE":
-		u = url.URL{Scheme: "http", Host: c.Addr, Path: fmt.Sprintf("/%s/", key)}
+		u = url.URL{
+			Scheme: "http",
+			Host:   c.Addr,
+			Path:   fmt.Sprintf("/%s/%s/%s", key.Namespace, key.Type, key.Name),
+		}
 	case "FIND":
-		u = url.URL{Scheme: "http", Host: c.Addr, Path: fmt.Sprintf("/%s/find", key)}
+		u = url.URL{Scheme: "http", Host: c.Addr, Path: "/find"}
 	case "WATCH":
-		u = url.URL{Scheme: "ws", Host: c.Addr, Path: fmt.Sprintf("/%s/watch", key)}
+		u = url.URL{
+			Scheme: "ws",
+			Host:   c.Addr,
+			Path:   fmt.Sprintf("/%s/%s/%s/watch", key.Namespace, key.Type, key.Name),
+		}
 	default:
 		panic("unknown action")
 	}
