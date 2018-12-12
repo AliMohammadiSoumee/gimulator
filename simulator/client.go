@@ -40,6 +40,34 @@ func (c *Client) Get(key string) (interface{}, error) {
 	return object, nil
 }
 
+func (c *Client) Find(filter interface{}) ([]interface{}, error) {
+	buf := &bytes.Buffer{}
+	if err := json.NewEncoder(buf).Encode(filter); err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", c.url("FIND", "_blank"), buf)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unsuccessful request")
+	}
+
+	var objectList []interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&objectList); err != nil {
+		return nil, err
+	}
+
+	return objectList, nil
+}
+
 func (c *Client) Set(key string, object interface{}) error {
 	buf := &bytes.Buffer{}
 	if err := json.NewEncoder(buf).Encode(object); err != nil {
@@ -106,6 +134,8 @@ func (c *Client) url(action string, key string) string {
 	switch strings.ToUpper(action) {
 	case "GET", "SET", "DELETE":
 		u = url.URL{Scheme: "http", Host: c.Addr, Path: fmt.Sprintf("/%s/", key)}
+	case "FIND":
+		u = url.URL{Scheme: "http", Host: c.Addr, Path: fmt.Sprintf("/%s/find", key)}
 	case "WATCH":
 		u = url.URL{Scheme: "ws", Host: c.Addr, Path: fmt.Sprintf("/%s/watch", key)}
 	default:

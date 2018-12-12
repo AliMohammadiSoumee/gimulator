@@ -34,6 +34,7 @@ func (h *HTTPSimulator) ListenAndServe(bind string) error {
 func (h *HTTPSimulator) setRouter() {
 	r := mux.NewRouter()
 	r.HandleFunc("/{key}/", h.handleGet).Methods("GET")
+	r.HandleFunc("/{key}/find", h.handleFind).Methods("POST")
 	r.HandleFunc("/{key}/", h.handleSet).Methods("POST")
 	r.HandleFunc("/{key}/", h.handleDelete).Methods("DELETE")
 	r.HandleFunc("/{key}/watch", h.handleWatch).Methods("GET")
@@ -49,6 +50,24 @@ func (h *HTTPSimulator) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(result); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func (h *HTTPSimulator) handleFind(w http.ResponseWriter, r *http.Request) {
+	var filter interface{}
+	if err := json.NewDecoder(r.Body).Decode(&filter); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	objectList, err := h.Gimulator.Find(filter)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(objectList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

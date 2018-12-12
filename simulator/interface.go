@@ -4,6 +4,10 @@ type Getter interface {
 	Get(key string) (interface{}, error)
 }
 
+type Finder interface {
+	Find(filter interface{}) ([]interface{}, error)
+}
+
 type Setter interface {
 	Set(key string, object interface{}) error
 }
@@ -19,6 +23,7 @@ type Watcher interface {
 // FIXME: WTF is this name?
 type Gimulator interface {
 	Getter
+	Finder
 	Setter
 	Deleter
 	Watcher

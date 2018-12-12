@@ -49,6 +49,18 @@ func (s *Simulator) Get(key string) (interface{}, error) {
 	return result.value, result.err
 }
 
+func (s *Simulator) Find(filter interface{}) ([]interface{}, error) {
+	result := <-s.send(msgFind{filter: filter})
+	if result.err != nil {
+		return nil, result.err
+	}
+	valueList, ok := result.value.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unexpected result from find")
+	}
+	return valueList, nil
+}
+
 func (s *Simulator) Set(key string, object interface{}) error {
 	<-s.send(msgSet{key: key, object: object})
 	return nil
@@ -87,6 +99,8 @@ func (s *Simulator) loop(t task) {
 	switch msg := t.input.(type) {
 	case msgGet:
 		result, err = s.get(msg.key)
+	case msgFind:
+		result, err = s.find(msg.filter)
 	case msgSet:
 		s.set(msg.key, msg.object)
 		changed = &Reconcile{
@@ -119,6 +133,17 @@ func (s *Simulator) get(key string) (interface{}, error) {
 		return object, nil
 	}
 	return nil, fmt.Errorf("object with %v key does not exist", key)
+}
+
+func (s *Simulator) find(filter interface{}) ([]interface{}, error) {
+	result := make([]interface{}, 0)
+	m := &Matcher{Filter: filter}
+	for _, object := range s.storage {
+		if m.match(object) {
+			result = append(result, object)
+		}
+	}
+	return result, nil
 }
 
 func (s *Simulator) set(key string, object interface{}) {
@@ -181,6 +206,10 @@ type msgSet struct {
 
 type msgDelete struct {
 	key string
+}
+
+type msgFind struct {
+	filter interface{}
 }
 
 type msgWatch struct {

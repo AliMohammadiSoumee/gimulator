@@ -46,11 +46,18 @@ func main() {
 		}
 	}()
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 4; i++ {
 		time.Sleep(time.Second * 1)
 		err = c.Set("hello", map[string]int{"hello": i})
 		fmt.Println("SET key hello:", err)
 	}
+
+	for i := 0; i < 4; i++ {
+		err = c.Set(fmt.Sprintf("hello%d", i), map[string]int{"hello": i})
+	}
+
+	ans, err = c.Find(map[string]int{"hello": 3})
+	fmt.Println("FIND for {hello 9}:", ans, err)
 
 	err = c.Delete("hello")
 	fmt.Println("DELETE key hello:", err)
