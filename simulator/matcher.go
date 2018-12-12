@@ -24,10 +24,6 @@ func match(expected, actual interface{}) bool {
 	}
 
 	l, r := reflect.ValueOf(expected), reflect.ValueOf(actual)
-
-	if l.Type() != r.Type() {
-		return false
-	}
 	return matchValue(l, r)
 }
 
