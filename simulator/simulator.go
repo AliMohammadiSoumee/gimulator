@@ -8,16 +8,10 @@ const (
 	TaskBufferSize = 256
 )
 
-type Key struct {
-	Namespace string
-	Type      string
-	Name      string
-}
-
-type Object struct {
-	Key
-	Value interface{}
-}
+const (
+	SetAction = "set"
+	GetAction = "get"
+)
 
 type Reconcile struct {
 	Action string
@@ -54,13 +48,14 @@ func (s *Simulator) Run() {
 	}()
 }
 
-func (s *Simulator) Get(key Key) (*Object, error) {
+func (s *Simulator) Get(key Key, object *Object) error {
 	result := <-s.send(msgGet{key: key})
-	object, ok := result.value.(Object)
+	obj, ok := result.value.(Object)
 	if !ok {
-		return nil, fmt.Errorf("unexpected result from get")
+		return fmt.Errorf("unexpected result from get")
 	}
-	return &object, result.err
+	*object = obj
+	return result.err
 }
 
 func (s *Simulator) Find(filter Object) ([]Object, error) {

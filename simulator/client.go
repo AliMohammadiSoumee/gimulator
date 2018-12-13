@@ -17,27 +17,26 @@ type Client struct {
 
 var _ Gimulator = (*Client)(nil)
 
-func (c *Client) Get(key Key) (*Object, error) {
+func (c *Client) Get(key Key, object *Object) error {
 	req, err := http.NewRequest("GET", c.url("GET", key), nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unsuccessful request")
+		return fmt.Errorf("unsuccessful request")
 	}
 
-	var object Object
-	if err := json.NewDecoder(resp.Body).Decode(&object); err != nil {
-		return nil, err
+	if err := json.NewDecoder(resp.Body).Decode(object); err != nil {
+		return err
 	}
 
-	return &object, nil
+	return nil
 }
 
 func (c *Client) Find(filter Object) ([]Object, error) {

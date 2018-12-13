@@ -35,7 +35,7 @@ func main() {
 			Type:      "integer",
 		},
 		Value: map[string]interface{}{
-			"hello": "world",
+			"Hello": "world",
 		}}, ch)
 	fmt.Println("HUH?", err)
 
@@ -52,13 +52,20 @@ func main() {
 	}
 	hello := simulator.Object{
 		Key:   hellokey,
-		Value: map[string]string{"hello": "world"},
+		Value: map[string]string{"Hello": "world"},
 	}
 	err = c.Set(hello)
 	fmt.Println(ans, err)
 
-	ans, err = c.Get(simulator.Key{Name: "hello", Type: "integer", Namespace: "ns"})
-	fmt.Println(ans, err)
+	var object simulator.Object
+	err = c.Get(simulator.Key{Name: "hello", Type: "integer", Namespace: "ns"}, &object)
+	fmt.Println(object, err)
+
+	type Hello struct {
+		Hello string
+	}
+	err = object.Struct(&Hello{})
+	fmt.Println("WRF", object, err)
 
 	fmt.Scanln()
 }
