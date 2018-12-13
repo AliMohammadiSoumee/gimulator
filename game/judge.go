@@ -5,19 +5,19 @@ var (
 	dirY = []int{0, 1, 1, 1, 0, -1, -1, -1}
 )
 
-type actionResult string
+type ActionResult string
 
 const (
-	validActionWithPrice actionResult = "validActionWithPrice"
-	validAction          actionResult = "validAction"
-	invalidAction        actionResult = "invalidAction"
-	winningAction        actionResult = "winningAction"
-	losingAction         actionResult = "losingAction"
+	ValidActionWithPrice ActionResult = "validActionWithPrice"
+	ValidAction          ActionResult = "validAction"
+	InvalidAction        ActionResult = "invalidAction"
+	WinningAction        ActionResult = "winningAction"
+	LosingAction         ActionResult = "losingAction"
 )
 
-func judge(action Action, world World) actionResult {
-	if world.BallPos.NotEqual(action.From) {
-		return invalidAction
+func Judge(action Action, world World) ActionResult {
+	if !world.BallPos.Equal(action.From) {
+		return InvalidAction
 	}
 
 	validMoves := createValidMoves(world.BallPos, world.Moves)
@@ -27,22 +27,29 @@ func judge(action Action, world World) actionResult {
 		B: action.To,
 	}
 
+	winningStates := world.Player1.Side.WinStates
+	losingStates := world.Player1.Side.LoseStates
+	if action.PlayerName == world.Player2.Name {
+		winningStates = world.Player2.Side.WinStates
+		losingStates = world.Player2.Side.LoseStates
+	}
+
 	if !isValidMove(playerMove, validMoves) {
-		return invalidAction
+		return InvalidAction
 	}
-	if winningWithGoal(action) {
-		return winningAction
+	if inStates(action, winningStates) {
+		return WinningAction
 	}
-	if losingWithGoal(action) {
-		return losingAction
+	if inStates(action, losingStates) {
+		return LosingAction
 	}
 	if isBlockedState(action.To, playgroundAngs) {
-		return losingAction
+		return LosingAction
 	}
 	if isValidActionWithPrice(action.To, playgroundAngs) {
-		return validActionWithPrice
+		return ValidActionWithPrice
 	}
-	return validAction
+	return ValidAction
 }
 
 func createValidMoves(ball State, moves []Move) []Move {
@@ -75,7 +82,7 @@ func createValidMoves(ball State, moves []Move) []Move {
 func createPlaygroundAngles(moves []Move) [][]int {
 	var playground = make([][]int, HeightOfMap+1)
 	for i := 0; i < HeightOfMap+1; i++ {
-		playground[i] = make([]int, WidthOfMap+1, 0)
+		playground[i] = make([]int, WidthOfMap+1)
 	}
 
 	for _, move := range moves {
@@ -97,20 +104,10 @@ func isValidMove(move Move, validMoves []Move) bool {
 	return false
 }
 
-func winningWithGoal(action Action) bool {
+func inStates(action Action, states []State) bool {
 	p := action.To
-	for _, winState := range action.Player.Side.WinStates {
-		if p.Equal(winState) {
-			return true
-		}
-	}
-	return false
-}
-
-func losingWithGoal(action Action) bool {
-	p := action.To
-	for _, loseState := range action.Player.Side.LoseStates {
-		if p.Equal(loseState) {
+	for _, s := range states {
+		if p.Equal(s) {
 			return true
 		}
 	}
