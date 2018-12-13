@@ -64,7 +64,7 @@ func main() {
 		height: height(),
 	}
 
-	html := drawer.Draw()
+	html := drawer.DrawField()
 	render(html)
 
 	sigc := make(chan os.Signal)
