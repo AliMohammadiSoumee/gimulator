@@ -74,6 +74,8 @@ func (w *World) setLastAction() {
 	w.LastAction = time.Now()
 }
 
+const ActionType = "Action"
+
 type Action struct {
 	PlayerName string `json:"player_name"`
 	From       State  `json:"from"`
