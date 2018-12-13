@@ -1,4 +1,4 @@
-package GUI
+package main
 
 import "time"
 
@@ -71,4 +71,3 @@ type Player struct {
 	Name     string        `json:"name"`
 	Side     Side          `json:"side"`
 }
-
