@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 )
 
 type worldDrawer struct {
@@ -41,6 +43,39 @@ func (w worldDrawer) DrawField() string {
 	return html
 }
 
+func (w worldDrawer) genUpperSpec() (string, string) {
+	if w.Player1.Side.Pos == UpperPos {
+		return w.Player1.Name, timeConverter(w.Player1.Duration)
+	}
+	if w.Player2.Side.Pos == UpperPos {
+		return w.Player2.Name, timeConverter(w.Player2.Duration)
+	}
+	return "No Player", "00:00"
+}
+
+func (w worldDrawer) genLowerSpec() (string, string) {
+	if w.Player1.Side.Pos == LowerPos {
+		return w.Player1.Name, timeConverter(w.Player1.Duration)
+	}
+	if w.Player2.Side.Pos == LowerPos {
+		return w.Player2.Name, timeConverter(w.Player2.Duration)
+	}
+	return "No Player", "00:00"
+}
+
+func (w worldDrawer) genTurn() string {
+	if w.Turn == "" {
+		return "Turn: -"
+	}
+	return "Turn: " + w.Turn
+}
+
+func timeConverter(duration time.Duration) string {
+	min := int(duration.Minutes())
+	sec := int(duration.Seconds()) - min*60
+
+	return strconv.Itoa(min) + ":" + strconv.Itoa(sec)
+}
 
 func min(a, b int) int {
 	if a < b {

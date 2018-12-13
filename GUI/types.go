@@ -51,13 +51,15 @@ func (e *Move) Equal(edge Move) bool {
 
 type World struct {
 	Moves   []Move `json:"moves"`
-	Turn    Player `json:"turn"`
+	Turn    string `json:"turn"`
 	BallPos State  `json:"ball_pos"`
-	Winner  Player `json:"winner"`
+	Winner  string `json:"winner"`
+	Player1 Player `json:"player1"`
+	Player2 Player `json:"player2"`
 }
 
 func (w *World) SetWinner(p Player) {
-	w.Winner = p
+	w.Winner = p.Name
 }
 
 type Action struct {

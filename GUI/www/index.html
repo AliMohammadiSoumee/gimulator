@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial;
-            color: white;
+            color: black;
         }
 
         .hor_split {
@@ -28,19 +28,16 @@
 
         .top {
             top: 0;
-            background-color: red;
             height: 40%;
         }
 
         .middle {
             top: 40%;
-            background-color: blueviolet;
             height: 20%;
         }
 
         .bottom {
             bottom: 0;
-            background-color: blue;
             height: 40%;
         }
 
@@ -52,7 +49,7 @@
 
         .right {
             right: 0;
-            background-color: #dfff07;
+            background-color: deepskyblue;
             width: 30%;
         }
 
@@ -75,26 +72,66 @@
 </div>
 
 <div class="hor_split right">
-    <div class="ver_split top">
-        <svg class="centered">
-            <a id="myLink" href="#" onclick="MyFunction('a');">
-                <circle cx="20" cy="100" r="10" stroke="black" stroke-width="1" fill="yellow"/>
-            </a>
-        </svg>
+    <div style="float: right; width: 100%; overflow-x: hidden; margin-top: 20%;">
+        <div style="vertical-align: middle; line-height: 30px; background: rgba(0, 0, 0, 0.8); color: rgba(255, 255, 255, 0.95); font-weight: bold; padding: 0px 5px;">
+            #1
+        </div>
+        <div style="position: relative;">
+            <div style="background: rgb(255, 255, 255); padding: 6px 6px 6px 0px; visibility: inherit;">
+                <div id="upperPlayer" style="font-size: 115%; color: inherit; padding: 2px 6px;">Ali</div>
+            </div>
+        </div>
+        <div id="upperTime" style="vertical-align: middle; line-height: 30px; background: rgba(0, 0, 0, 0.8); color: rgba(255, 255, 255, 0.95); font-weight: bold; padding: 0px 5px;">
+            4:50
+        </div>
     </div>
-    <div class="ver_split middle">
-
+    <div style="float: right; width: 100%; overflow-x: hidden; margin-top: 20%;">
+        <div style="position: relative;">
+            <div style="background: rgb(255, 255, 255); padding: 6px 6px 6px 0px; visibility: inherit;">
+                <div id="turn" style="font-size: 115%; color: inherit; padding: 2px 6px;">Turn: Mamad</div>
+            </div>
+        </div>
     </div>
-    <div class="ver_split bottom">
-
+    <div style="float: right; width: 100%; overflow-x: hidden; margin-top: 20%;">
+        <div style="vertical-align: middle; line-height: 30px; background: rgba(0, 0, 0, 0.8); color: rgba(255, 255, 255, 0.95); font-weight: bold; padding: 0px 5px;">
+            #2
+        </div>
+        <div style="position: relative;">
+            <div style="background: rgb(255, 255, 255); padding: 6px 6px 6px 0px; visibility: inherit;">
+                <div id="lowerPlayer" style="font-size: 115%; color: inherit; padding: 2px 6px;">Mamad</div>
+            </div>
+        </div>
+        <div id="lowerTime" style="vertical-align: middle; line-height: 30px; background: rgba(0, 0, 0, 0.8); color: rgba(255, 255, 255, 0.95); font-weight: bold; padding: 0px 5px;">
+            4:12
+        </div>
     </div>
 </div>
 
 <script>
     const svg = document.querySelector('#svgCanvas');
+    const upperPlayer = document.querySelector('#upperPlayer');
+    const upperTime = document.querySelector('#upperTime');
+    const turn = document.querySelector('#turn');
+    const lowerPlayer = document.querySelector('#lowerPlayer');
+    const lowerTime = document.querySelector('#lowerTime');
 
-    function render(str) {
+    function renderField(str) {
         svg.innerHTML = str;
+    }
+    function renderUpperPlayer(str) {
+        upperPlayer.innerHTML = str;
+    }
+    function renderUpperTime(str) {
+        upperTime.innerHTML = str;
+    }
+    function renderTurn(str) {
+        turn.innerHTML = str;
+    }
+    function renderLowerPlayer(str) {
+        lowerPlayer.innerHTML = str;
+    }
+    function renderLowerTime(str) {
+        lowerTime.innerHTML = str;
     }
 
     function width() {
