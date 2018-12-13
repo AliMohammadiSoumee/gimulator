@@ -12,3 +12,11 @@
 *.out
 
 *.idea
+
+*.txt
+
+# binaries
+GUI/GUI
+game/game
+simulator/simulator
+
