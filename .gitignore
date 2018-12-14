@@ -20,3 +20,5 @@ simulator/cmd/cmd
 gui/gui
 game/cmd/cmd
 logger/logger
+random_player/random_player
+

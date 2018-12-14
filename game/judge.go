@@ -22,7 +22,7 @@ func Judge(action types.Action, world types.World) ActionResult {
 		return InvalidAction
 	}
 
-	validMoves := createValidMoves(world.BallPos, world.Moves)
+	validMoves := CreateValidMoves(world.BallPos, world.Moves)
 	playgroundAngs := createPlaygroundAngles(world.Moves)
 	playerMove := types.Move{
 		A: action.From,
@@ -54,7 +54,7 @@ func Judge(action types.Action, world types.World) ActionResult {
 	return ValidAction
 }
 
-func createValidMoves(ball types.State, moves []types.Move) []types.Move {
+func CreateValidMoves(ball types.State, moves []types.Move) []types.Move {
 	var validMoves []types.Move
 
 	for ind := 0; ind < 8; ind++ {
