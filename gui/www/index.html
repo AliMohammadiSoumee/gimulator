@@ -73,6 +73,13 @@
 
 <div class="hor_split right">
     <div style="float: right; width: 100%; overflow-x: hidden; margin-top: 20%;">
+        <div style="position: relative;">
+            <div style="background: rgb(255, 255, 255); padding: 6px 6px 6px 0px; visibility: inherit;">
+                <div id="name" style="font-size: 115%; color: inherit; padding: 2px 6px;">Turn: Mamad</div>
+            </div>
+        </div>
+    </div>
+    <div style="float: right; width: 100%; overflow-x: hidden; margin-top: 20%;">
         <div style="vertical-align: middle; line-height: 30px; background: rgba(0, 0, 0, 0.8); color: rgba(255, 255, 255, 0.95); font-weight: bold; padding: 0px 5px;">
             #1
         </div>
@@ -112,11 +119,15 @@
     const upperPlayer = document.querySelector('#upperPlayer');
     const upperTime = document.querySelector('#upperTime');
     const turn = document.querySelector('#turn');
+    const name = document.querySelector('#name');
     const lowerPlayer = document.querySelector('#lowerPlayer');
     const lowerTime = document.querySelector('#lowerTime');
 
     function renderField(str) {
         svg.innerHTML = str;
+    }
+    function renderName(str) {
+        name.innerHTML = str;
     }
     function renderUpperPlayer(str) {
         upperPlayer.innerHTML = str;

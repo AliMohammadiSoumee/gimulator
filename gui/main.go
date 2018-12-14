@@ -33,6 +33,7 @@ func renderField(html string)       { ui.Eval(fmt.Sprintf("renderField(`%s`);", 
 func renderUpperPlayer(html string) { ui.Eval(fmt.Sprintf("renderUpperPlayer(`%s`);", html)) }
 func renderUpperTime(html string)   { ui.Eval(fmt.Sprintf("renderUpperTime(`%s`);", html)) }
 func renderTurn(html string)        { ui.Eval(fmt.Sprintf("renderTurn(`%s`);", html)) }
+func renderName(html string)        { ui.Eval(fmt.Sprintf("renderName(`%s`);", html)) }
 func renderLowerPlayer(html string) { ui.Eval(fmt.Sprintf("renderLowerPlayer(`%s`);", html)) }
 func renderLowerTime(html string)   { ui.Eval(fmt.Sprintf("renderLowerTime(`%s`);", html)) }
 func width() int                    { return ui.Eval(`width()`).Int() }
@@ -52,6 +53,10 @@ func render(drawer worldDrawer) {
 
 	turn := drawer.genTurn()
 	renderTurn(turn)
+
+	name := drawer.genPlayerName()
+	fmt.Println(name)
+	renderName(name)
 
 	lastDrawer = drawer
 }

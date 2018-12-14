@@ -73,9 +73,19 @@ func (w worldDrawer) genLowerSpec() (string, string) {
 
 func (w worldDrawer) genTurn() string {
 	if w.Turn == "" {
+		if w.Winner != "" {
+			return "Winner: " + w.Winner
+		}
 		return "Turn: -"
 	}
 	return "Turn: " + w.Turn
+}
+
+func (w worldDrawer) genPlayerName() string {
+	if playerName == "" {
+		return "Watcher"
+	}
+	return playerName
 }
 
 func timeConverter(duration int64) string {
