@@ -1,7 +1,7 @@
 package simulator
 
 type Getter interface {
-	Get(key Key, object *Object) error
+	Get(key Key) (*Object, error)
 }
 
 type Finder interface {

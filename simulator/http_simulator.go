@@ -63,8 +63,7 @@ func (h *HTTPSimulator) handleGet(w http.ResponseWriter, r *http.Request) {
 		Type:      mux.Vars(r)["type"],
 		Name:      mux.Vars(r)["name"],
 	}
-	var result Object
-	err := h.Gimulator.Get(key, &result)
+	result, err := h.Gimulator.Get(key)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

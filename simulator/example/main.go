@@ -57,8 +57,7 @@ func main() {
 	err = c.Set(hello)
 	fmt.Println(ans, err)
 
-	var object simulator.Object
-	err = c.Get(simulator.Key{Name: "hello", Type: "integer", Namespace: "ns"}, &object)
+	object, err := c.Get(simulator.Key{Name: "hello", Type: "integer", Namespace: "ns"})
 	fmt.Println(object, err)
 
 	type Hello struct {
