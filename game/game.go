@@ -17,8 +17,8 @@ func Update(action types.Action, world types.World) types.World {
 		world.Moves = append(world.Moves,
 			types.Move{
 				Name: action.PlayerName,
-				A: action.From,
-				B: action.To,
+				A:    action.From,
+				B:    action.To,
 			})
 		switch turnState {
 		case changeTurn:
@@ -33,6 +33,16 @@ func Update(action types.Action, world types.World) types.World {
 	}
 
 	world.UpdateTimer(action.PlayerName)
+	if world.Player1.Duration <= 0 {
+		world.Turn = ""
+		world.Winner = world.OtherPlayer(world.Player1.Name)
+		return world
+	}
+	if world.Player2.Duration <= 0 {
+		world.Turn = ""
+		world.Winner = world.OtherPlayer(world.Player2.Name)
+		return world
+	}
 
 	actionRes := Judge(action, world)
 	log.Printf("Action with result: %s", actionRes)
