@@ -26,6 +26,5 @@ func main() {
 	signal.Notify(sigc, os.Interrupt)
 	select {
 	case <-sigc:
-		fmt.Println("sigc")
 	}
 }

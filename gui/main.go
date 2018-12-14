@@ -55,7 +55,6 @@ func render(drawer worldDrawer) {
 	renderTurn(turn)
 
 	name := drawer.genPlayerName()
-	fmt.Println(name)
 	renderName(name)
 
 	lastDrawer = drawer
@@ -91,9 +90,7 @@ func main() {
 	signal.Notify(sigc, os.Interrupt)
 	select {
 	case <-sigc:
-		fmt.Println("sigc")
 	case <-ui.Done():
-		fmt.Println("Done")
 	}
 
 	log.Println("exiting...")
@@ -151,7 +148,6 @@ func eventHandler(x, y int) {
 		B: types.State{X: x, Y: y},
 	}
 	lastDrawer.Moves = append(lastDrawer.Moves, move)
-	fmt.Println(move)
 
 	render(lastDrawer)
 
