@@ -17,7 +17,7 @@
 
 # binaries
 gui/gui
-game/game
+game/cmd/cmd
 simulator/simulator
 logger/logger
 
