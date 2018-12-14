@@ -38,6 +38,16 @@ func (o *Object) Struct(typ interface{}) error {
 		}
 
 		o.Value = reflect.ValueOf(typ).Elem().Interface()
+	} else {
+		// TODO: Test ME!
+		valueType := reflect.TypeOf(o.Value)
+		typElem := reflect.ValueOf(typ).Elem()
+		typType := typElem.Type()
+		if valueType != typType {
+			return fmt.Errorf("object value(%v:%v) and typ(%v:%v) have diffrent types",
+				o.Value, valueType,
+				typElem, typType)
+		}
 	}
 	return nil
 }
