@@ -35,7 +35,26 @@ func (w *worldDrawer) DrawField() string {
 	}
 
 	for _, move := range w.Moves {
-		html += newLine(w.grid[move.A.X][move.A.Y].X, w.grid[move.A.X][move.A.Y].Y, w.grid[move.B.X][move.B.Y].X, w.grid[move.B.X][move.B.Y].Y, "red")
+		name := move.Name
+		fmt.Println(move)
+		color := "yellow"
+		if move.Name == "" {
+			html += newLine(w.grid[move.A.X][move.A.Y].X, w.grid[move.A.X][move.A.Y].Y, w.grid[move.B.X][move.B.Y].X, w.grid[move.B.X][move.B.Y].Y, "yellow")
+		}
+		if name == w.Player1.Name {
+			if w.Player1.Side.Pos == types.UpperPos {
+				color = "red"
+			} else {
+				color = "blue"
+			}
+		} else {
+			if w.Player2.Side.Pos == types.UpperPos {
+				color = "red"
+			} else {
+				color = "blue"
+			}
+		}
+		html += newLine(w.grid[move.A.X][move.A.Y].X, w.grid[move.A.X][move.A.Y].Y, w.grid[move.B.X][move.B.Y].X, w.grid[move.B.X][move.B.Y].Y, color)
 	}
 
 	for x := 0; x < types.WidthOfMap; x++ {

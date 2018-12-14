@@ -16,6 +16,7 @@ func Update(action types.Action, world types.World) types.World {
 		world.BallPos = action.To
 		world.Moves = append(world.Moves,
 			types.Move{
+				Name: action.PlayerName,
 				A: action.From,
 				B: action.To,
 			})

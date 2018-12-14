@@ -132,6 +132,7 @@ func (p *State) Equal(point State) bool {
 }
 
 type Move struct {
+	Name string `json:"name"`
 	A State `json:"a"`
 	B State `json:"b"`
 }
