@@ -18,15 +18,15 @@ const (
 const WorldType = "World"
 
 type World struct {
-	Width      int       `json:"width"`
-	Height     int       `json:"height"`
-	Moves      []Move    `json:"moves"`
-	Turn       string    `json:"turn"`
-	BallPos    State     `json:"ball_pos"`
-	Winner     string    `json:"winner"`
-	Player1    Player    `json:"player1"`
-	Player2    Player    `json:"player2"`
-	LastAction time.Time `json:"last_action"`
+	Width      int    `json:"width"`
+	Height     int    `json:"height"`
+	Moves      []Move `json:"moves"`
+	Turn       string `json:"turn"`
+	BallPos    State  `json:"ball_pos"`
+	Winner     string `json:"winner"`
+	Player1    Player `json:"player1"`
+	Player2    Player `json:"player2"`
+	LastAction int64  `json:"last_action"`
 }
 
 func NewWorld(playerName1, playerName2 string) World {
@@ -48,8 +48,9 @@ func NewWorld(playerName1, playerName2 string) World {
 		BallPos:    State{X: 6, Y: 7},
 		Player1:    player1,
 		Player2:    player2,
-		LastAction: time.Now(),
+		LastAction: 0,
 	}
+	world.SetLastAction()
 
 	return world
 }
@@ -71,7 +72,7 @@ func (w *World) OtherPlayer(playerName string) string {
 }
 
 func (w *World) SetLastAction() {
-	w.LastAction = time.Now()
+	w.LastAction = time.Now().UnixNano()
 }
 
 const ActionType = "Action"
@@ -87,9 +88,9 @@ const PlayerIntroType = "PlayerIntro"
 type PlayerIntro struct{}
 
 type Player struct {
-	Duration time.Duration `json:"duration"`
-	Name     string        `json:"name"`
-	Side     Side          `json:"side"`
+	Duration int64  `json:"duration"`
+	Name     string `json:"name"`
+	Side     Side   `json:"side"`
 }
 
 func NewPlayer(name string, position Position) Player {
@@ -103,12 +104,13 @@ func NewPlayer(name string, position Position) Player {
 	return Player{
 		Name:     name,
 		Side:     side,
-		Duration: time.Minute * 5,
+		Duration: int64(time.Minute * 5),
 	}
 }
 
-func (p *Player) UpdateTimer(t time.Time) {
-	p.Duration -= time.Now().Sub(t)
+func (p *Player) UpdateTimer(unixtime int64) {
+	t := time.Unix(0, unixtime)
+	p.Duration -= int64(time.Now().Sub(t))
 }
 
 type Side struct {

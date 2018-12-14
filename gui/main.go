@@ -8,10 +8,11 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"time"
 
-	"github.com/zserge/lorca"
-	"github.com/alidadar7676/gimulator/types"
 	"github.com/alidadar7676/gimulator/simulator"
+	"github.com/alidadar7676/gimulator/types"
+	"github.com/zserge/lorca"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 
 var (
 	ui           lorca.UI
-	lastDrawer       worldDrawer
+	lastDrawer   worldDrawer
 	disableEvent bool
 	playerName   string
 )
@@ -64,6 +65,11 @@ func main() {
 		playerName = os.Args[2]
 	}
 
+	initGUI()
+	defer ui.Close()
+
+	time.Sleep(time.Millisecond * 500)
+
 	disableEvent = true
 	hostName, _ := os.Hostname()
 	controllerName := fmt.Sprintf("gui-controller-%s-%s", hostName, playerName)
@@ -72,9 +78,6 @@ func main() {
 	if playerName != "" {
 		controller.InitPlayer(playerName)
 	}
-
-	initGUI()
-	defer ui.Close()
 
 	sigc := make(chan os.Signal)
 	signal.Notify(sigc, os.Interrupt)
@@ -122,6 +125,7 @@ func initGUI() {
 		height: height(),
 	}
 
+	lastDrawer = drawer
 	render(drawer)
 }
 

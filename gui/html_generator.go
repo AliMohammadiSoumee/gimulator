@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
 	"github.com/alidadar7676/gimulator/types"
 )
 
 type worldDrawer struct {
 	types.World
 	width, height int
-	grid [][]types.State
+	grid          [][]types.State
 }
 
 func (w *worldDrawer) DrawField() string {
@@ -20,11 +21,6 @@ func (w *worldDrawer) DrawField() string {
 		marginx = (w.width - delta*(types.WidthOfMap-1)) / 2
 		marginy = (w.height - delta*(types.HeightOfMap-1)) / 2
 	)
-	fmt.Println(w.width, w.height)
-	fmt.Println(marginx, marginy)
-	fmt.Println(delta)
-
-	fmt.Println("SDFSD")
 	w.grid = make([][]types.State, types.WidthOfMap+1)
 	for i := 0; i < types.WidthOfMap+1; i++ {
 		w.grid[i] = make([]types.State, types.HeightOfMap+1)
@@ -82,9 +78,10 @@ func (w worldDrawer) genTurn() string {
 	return "Turn: " + w.Turn
 }
 
-func timeConverter(duration time.Duration) string {
-	min := int(duration.Minutes())
-	sec := int(duration.Seconds()) - min*60
+func timeConverter(duration int64) string {
+	d := time.Duration(duration)
+	min := int(d.Minutes())
+	sec := int(d.Seconds()) - min*60
 
 	return strconv.Itoa(min) + ":" + strconv.Itoa(sec)
 }

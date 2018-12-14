@@ -51,7 +51,7 @@ func (c *Controller) Run() {
 		for r := range c.watcher {
 			var world types.World
 			if err := r.Object.Struct(&world); err != nil {
-				log.Printf("object %v is not world\n", r.Object)
+				log.Printf("object %v is not world: %v\n", r.Object, err)
 				continue
 			}
 			c.watchWorld(world)
@@ -60,7 +60,11 @@ func (c *Controller) Run() {
 }
 
 func (c *Controller) watchWorld(world types.World) {
-	d := worldDrawer{World: world}
+	d := worldDrawer{
+		World:  world,
+		width:  lastDrawer.width,
+		height: lastDrawer.height,
+	}
 	render(d)
 	disableEvent = world.Turn != playerName
 }
