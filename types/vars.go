@@ -206,14 +206,14 @@ var (
 	LowerSide = Side{
 		Pos: LowerPos,
 		WinStates: []State{
-			{1, 5},
-			{1, 6},
-			{1, 7},
+			{5, 1},
+			{6, 1},
+			{6, 1},
 		},
 		LoseStates: []State{
-			{13, 5},
-			{13, 6},
-			{13, 7},
+			{5, 13},
+			{6, 13},
+			{7, 13},
 		},
 	}
 )
