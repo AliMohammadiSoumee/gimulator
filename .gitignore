@@ -16,7 +16,7 @@
 *.txt
 
 # binaries
-GUI/GUI
-game/game
 simulator/cmd/cmd
+gui/gui
+game/cmd/cmd
 logger/logger

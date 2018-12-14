@@ -11,6 +11,7 @@ import (
 
 	"github.com/zserge/lorca"
 	"github.com/alidadar7676/gimulator/types"
+	"github.com/alidadar7676/gimulator/simulator"
 )
 
 const (
@@ -19,8 +20,10 @@ const (
 )
 
 var (
-	ui     lorca.UI
-	drawer worldDrawer
+	ui           lorca.UI
+	lastDrawer       worldDrawer
+	disableEvent bool
+	playerName   string
 )
 
 func fuck(msg string)               { ui.Eval(fmt.Sprintf(`console.log("%s")`, msg)) }
@@ -46,25 +49,59 @@ func render(drawer worldDrawer) {
 
 	turn := drawer.genTurn()
 	renderTurn(turn)
+
+	lastDrawer = drawer
 }
 
 func main() {
-	var err error
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: gui <IP> [PlayerName]")
+		os.Exit(1)
+	}
+	ip := os.Args[1]
 
+	if len(os.Args) >= 3 {
+		playerName = os.Args[2]
+	}
+
+	disableEvent = true
+	controllerName := fmt.Sprintf("gui-controller-%s-%s", os.Hostname(), playerName)
+	controller := NewController(controllerName, "default", &simulator.Client{Addr: ip})
+	controller.Run()
+	if playerName != "" {
+		controller.InitPlayer(playerName)
+	}
+
+	initGUI()
+	defer ui.Close()
+
+	sigc := make(chan os.Signal)
+	signal.Notify(sigc, os.Interrupt)
+	select {
+	case <-sigc:
+		fmt.Println("sigc")
+	case <-ui.Done():
+		fmt.Println("Done")
+	}
+
+	log.Println("exiting...")
+}
+
+func initGUI() {
+	var err error
 	args := []string{}
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
 
 	ui, err = lorca.New("", "", Width, Height, args...)
-
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer ui.Close()
 
-	ui.Bind("start", func() {
-		log.Println("UI is ready")
+	ui.Bind("click", func(x, y int) {
+		log.Println("click on: ", x, y)
+		eventHandler(x, y)
 	})
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -78,20 +115,33 @@ func main() {
 		panic(err)
 	}
 
-	drawer = worldDrawer{
-		World:  types.World{},
+	drawer := worldDrawer{
+		World:  types.NewWorld("", ""),
 		width:  width(),
 		height: height(),
 	}
 
 	render(drawer)
+}
 
-	sigc := make(chan os.Signal)
-	signal.Notify(sigc, os.Interrupt)
-	select {
-	case <-sigc:
-	case <-ui.Done():
+func eventHandler(x, y int) {
+	if disableEvent {
+		return
 	}
+	if playerName == "" || playerName != lastDrawer.World.Turn {
+		return
+	}
+	disableEvent = true
 
-	log.Println("exiting...")
+	fmt.Println(lastDrawer)
+
+	lastDrawer.Moves = append(lastDrawer.Moves, types.Move{
+		A: lastDrawer.BallPos,
+		B: types.State{X: x, Y: y},
+	})
+	fmt.Println(types.Move{
+		A: lastDrawer.BallPos,
+		B: types.State{X: x, Y: y},
+	})
+	render(lastDrawer)
 }

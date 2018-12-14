@@ -25,12 +25,27 @@ func NewController(name, namespace string, gimulator simulator.Gimulator) *Contr
 }
 
 func (c *Controller) Run() {
-	c.gimulator.Watch(simulator.Object{
+	worldFilter := simulator.Object{
 		Key: simulator.Key{
 			Type:      types.WorldType,
 			Namespace: c.Namespace,
-		},
-	}, c.watcher)
+		}}
+
+	worlds, err := c.gimulator.Find(worldFilter)
+	switch {
+	case err != nil:
+		return
+	case len(worlds) > 1:
+		return
+	case len(worlds) == 1:
+		var world types.World
+		if err := worlds[0].Struct(&world); err != nil {
+			return
+		}
+		c.watchWorld(world)
+	}
+
+	c.gimulator.Watch(worldFilter, c.watcher)
 
 	go func() {
 		for r := range c.watcher {
@@ -45,6 +60,19 @@ func (c *Controller) Run() {
 }
 
 func (c *Controller) watchWorld(world types.World) {
-	drawer.World = world
-	render(drawer)
+	d := worldDrawer{World: world}
+	render(d)
+	disableEvent = world.Turn != playerName
+}
+
+func (c *Controller) InitPlayer(playerName string) error {
+	playerIntroObject := simulator.Object{
+		Key: simulator.Key{
+			Type:      types.PlayerIntroType,
+			Name:      playerName,
+			Namespace: c.Namespace,
+		},
+		Value: types.PlayerIntro{},
+	}
+	return c.gimulator.Set(playerIntroObject)
 }
