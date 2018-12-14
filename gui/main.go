@@ -25,6 +25,7 @@ var (
 	lastDrawer   worldDrawer
 	disableEvent bool
 	playerName   string
+	controller   *Controller
 )
 
 func fuck(msg string)               { ui.Eval(fmt.Sprintf(`console.log("%s")`, msg)) }
@@ -75,7 +76,7 @@ func main() {
 	disableEvent = true
 	hostName, _ := os.Hostname()
 	controllerName := fmt.Sprintf("gui-controller-%s-%s", hostName, playerName)
-	controller := NewController(controllerName, "default", &simulator.Client{Addr: ip})
+	controller = NewController(controllerName, "default", &simulator.Client{Addr: ip})
 	controller.Run()
 	if playerName != "" {
 		controller.InitPlayer(playerName)
@@ -140,15 +141,21 @@ func eventHandler(x, y int) {
 	}
 	disableEvent = true
 
-	fmt.Println(lastDrawer)
+	move := types.Move{
+		A: lastDrawer.BallPos,
+		B: types.State{X: x, Y: y},
+	}
+	lastDrawer.Moves = append(lastDrawer.Moves, move)
+	fmt.Println(move)
 
-	lastDrawer.Moves = append(lastDrawer.Moves, types.Move{
-		A: lastDrawer.BallPos,
-		B: types.State{X: x, Y: y},
-	})
-	fmt.Println(types.Move{
-		A: lastDrawer.BallPos,
-		B: types.State{X: x, Y: y},
-	})
 	render(lastDrawer)
+
+	err := controller.Act(types.Action{
+		PlayerName: playerName,
+		From:       move.A,
+		To:         move.B,
+	})
+	if err != nil {
+		log.Println("Can not set action:", err)
+	}
 }

@@ -67,8 +67,8 @@ func (c *Controller) Run() {
 func (c *Controller) watchWorld(world types.World) {
 	d := worldDrawer{
 		World:  world,
-		width:  lastDrawer.width,
-		height: lastDrawer.height,
+		width:  width(),
+		height: height(),
 	}
 	render(d)
 	disableEvent = world.Turn != playerName
@@ -84,4 +84,18 @@ func (c *Controller) InitPlayer(playerName string) error {
 		Value: types.PlayerIntro{},
 	}
 	return c.gimulator.Set(playerIntroObject)
+}
+
+func (c *Controller) Act(action types.Action) error {
+	actionKey := simulator.Key{
+		Type:      types.ActionType,
+		Name:      action.PlayerName,
+		Namespace: c.Namespace,
+	}
+	actionObject := simulator.Object{
+		Key:   actionKey,
+		Value: action,
+	}
+	log.Println("controller: set", action)
+	return c.gimulator.Set(actionObject)
 }
