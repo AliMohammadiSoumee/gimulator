@@ -48,14 +48,13 @@ func (s *Simulator) Run() {
 	}()
 }
 
-func (s *Simulator) Get(key Key, object *Object) error {
+func (s *Simulator) Get(key Key) (*Object, error) {
 	result := <-s.send(msgGet{key: key})
 	obj, ok := result.value.(Object)
 	if !ok {
-		return fmt.Errorf("unexpected result from get")
+		return nil, fmt.Errorf("unexpected result from get")
 	}
-	*object = obj
-	return result.err
+	return &obj, result.err
 }
 
 func (s *Simulator) Find(filter Object) ([]Object, error) {

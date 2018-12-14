@@ -73,7 +73,7 @@ func (c *Controller) playerJoined() error {
 		Name:      c.Name,
 		Namespace: c.Namespace,
 	}
-	err := c.gimulator.Get(worldKey, &simulator.Object{})
+	_, err := c.gimulator.Get(worldKey)
 	if err == nil {
 		// World already created
 		return nil
@@ -124,8 +124,8 @@ func (c *Controller) playerActed(actionObject simulator.Object) error {
 		Namespace: c.Namespace,
 		Type:      WorldType,
 	}
-	worldObject := simulator.Object{}
-	if err := c.gimulator.Get(worldKey, &worldObject); err != nil {
+	worldObject, err := c.gimulator.Get(worldKey)
+	if err != nil {
 		return fmt.Errorf("can not get world: %v", err)
 	}
 	var world World

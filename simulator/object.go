@@ -24,7 +24,15 @@ func (o *Object) Struct(typ interface{}) error {
 	}
 
 	if _, ok := o.Value.(map[string]interface{}); ok {
-		err := mapstructure.Decode(o.Value, typ)
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+			TagName: "json",
+			Result:  typ,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = decoder.Decode(o.Value)
 		if err != nil {
 			return err
 		}
