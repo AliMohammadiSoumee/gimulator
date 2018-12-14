@@ -37,6 +37,7 @@ func width() int                    { return ui.Eval(`width()`).Int() }
 func height() int                   { return ui.Eval(`height()`).Int() }
 
 func render(drawer worldDrawer) {
+	log.Println("Start rendering...")
 	field := drawer.DrawField()
 	renderField(field)
 
@@ -72,6 +73,8 @@ func main() {
 	if playerName != "" {
 		controller.InitPlayer(playerName)
 	}
+
+	log.Println("Start GUI...")
 
 	initGUI()
 	defer ui.Close()
