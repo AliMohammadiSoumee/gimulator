@@ -34,18 +34,23 @@ func (c *Controller) Run() {
 	worlds, err := c.gimulator.Find(worldFilter)
 	switch {
 	case err != nil:
+		log.Printf("An error in finding: %s", err)
 		return
 	case len(worlds) > 1:
+		log.Println("Number of World is more than one")
 		return
 	case len(worlds) == 1:
 		var world types.World
 		if err := worlds[0].Struct(&world); err != nil {
+			log.Printf("Cannot Structing the world object, Error: %s", err)
 			return
 		}
 		c.watchWorld(world)
 	}
 
-	c.gimulator.Watch(worldFilter, c.watcher)
+	if err = c.gimulator.Watch(worldFilter, c.watcher); err != nil {
+		log.Printf("Cannot watch on the world, Error: %s", err)
+	}
 
 	go func() {
 		for r := range c.watcher {

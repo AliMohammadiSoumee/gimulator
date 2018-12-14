@@ -58,6 +58,7 @@ func (c *Controller) Run() {
 }
 
 func (c *Controller) reconcile(r simulator.Reconcile) error {
+	log.Println("Start reconciling...")
 	switch {
 	case r.Object.Type == types.PlayerIntroType:
 		return c.playerJoined()
@@ -69,6 +70,7 @@ func (c *Controller) reconcile(r simulator.Reconcile) error {
 }
 
 func (c *Controller) playerJoined() error {
+	log.Println("Register Players")
 	worldKey := simulator.Key{
 		Type:      types.WorldType,
 		Name:      c.Name,
@@ -84,12 +86,15 @@ func (c *Controller) playerJoined() error {
 		Key: simulator.Key{
 			Namespace: c.Namespace,
 			Type:      types.PlayerIntroType,
-		}})
+		},
+	})
 	if err != nil {
+		log.Printf("Error Registering Players:Cannot find %v\n", err)
 		return err
 	}
 
 	if len(players) < 2 {
+		log.Println("Number of Players are less than 2")
 		return nil
 	}
 
@@ -105,9 +110,11 @@ func (c *Controller) playerJoined() error {
 		},
 		Value: world,
 	}
+	log.Printf("Two players are reconciled with names: %s, %s", playerName1, playerName2)
 
 	err = c.gimulator.Set(worldObject)
 	if err != nil {
+		log.Println("Can not set object world")
 		return err
 	}
 

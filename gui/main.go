@@ -38,6 +38,7 @@ func width() int                    { return ui.Eval(`width()`).Int() }
 func height() int                   { return ui.Eval(`height()`).Int() }
 
 func render(drawer worldDrawer) {
+	log.Println("Start rendering...")
 	field := drawer.DrawField()
 	renderField(field)
 
@@ -67,6 +68,7 @@ func main() {
 
 	initGUI()
 	defer ui.Close()
+	log.Println("Start GUI...")
 
 	time.Sleep(time.Millisecond * 500)
 

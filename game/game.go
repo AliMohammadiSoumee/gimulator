@@ -1,6 +1,9 @@
 package game
 
-import "github.com/alidadar7676/gimulator/types"
+import (
+	"github.com/alidadar7676/gimulator/types"
+	"log"
+)
 
 func Update(action types.Action, world types.World) types.World {
 	const (
@@ -31,6 +34,7 @@ func Update(action types.Action, world types.World) types.World {
 	world.UpdateTimer(action.PlayerName)
 
 	actionRes := Judge(action, world)
+	log.Printf("Action with result: %s", actionRes)
 	switch actionRes {
 	case InvalidAction:
 		return world
