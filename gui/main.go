@@ -65,7 +65,8 @@ func main() {
 	}
 
 	disableEvent = true
-	controllerName := fmt.Sprintf("gui-controller-%s-%s", os.Hostname(), playerName)
+	hostName, _ := os.Hostname()
+	controllerName := fmt.Sprintf("gui-controller-%s-%s", hostName, playerName)
 	controller := NewController(controllerName, "default", &simulator.Client{Addr: ip})
 	controller.Run()
 	if playerName != "" {
