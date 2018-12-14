@@ -10,18 +10,18 @@ def addSquareWithUpLeftPoint(x, y):
 	initMoves.add((i + 1, j, i, j + 1))
 	initMoves.add((i, j + 1, i + 1, j + 1))
 
-for i in range(1, 13):
-	for j in range(1, 9):
-		if (i == 1 or i == 12) and j != 5 and j != 6:
+for i in range(1, 12):
+	for j in range(1, 14):
+		if (i == 1 or i == 10) and j < 13:
 			addSquareWithUpLeftPoint(i, j)
-		elif j == 1 or j == 10:
+		elif (j == 1 or j == 12) and i != 5 and i != 6 and i < 10:
 			addSquareWithUpLeftPoint(i, j)
 
-initMoves.add((1, 5, 1, 6))
-initMoves.add((1, 6, 1, 7))
-initMoves.add((13, 5, 1, 6))
-initMoves.add((13, 6, 13, 7))
+initMoves.add((5, 1, 6, 1))
+initMoves.add((6, 1, 7, 1))
+initMoves.add((5, 13, 6, 13))
+initMoves.add((6, 13, 7, 13))
 
 for move in initMoves:
 	x, y, a, b = move
-	file.write("{{A: types.State{{X: {}, Y: {}}}, B: types.State{{X: {}, Y: {}}}}},\n".format(x, y, a, b))
+	file.write("{{A: State{{X: {}, Y: {}}}, B: State{{X: {}, Y: {}}}}},\n".format(x, y, a, b))

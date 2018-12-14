@@ -1,5 +1,7 @@
 package game
 
+import "github.com/alidadar7676/gimulator/types"
+
 var (
 	dirX = []int{1, 1, 0, -1, -1, -1, 0, 1}
 	dirY = []int{0, 1, 1, 1, 0, -1, -1, -1}
@@ -15,14 +17,14 @@ const (
 	LosingAction         ActionResult = "losingAction"
 )
 
-func Judge(action Action, world World) ActionResult {
+func Judge(action types.Action, world types.World) ActionResult {
 	if !world.BallPos.Equal(action.From) {
 		return InvalidAction
 	}
 
 	validMoves := createValidMoves(world.BallPos, world.Moves)
 	playgroundAngs := createPlaygroundAngles(world.Moves)
-	playerMove := Move{
+	playerMove := types.Move{
 		A: action.From,
 		B: action.To,
 	}
@@ -52,15 +54,15 @@ func Judge(action Action, world World) ActionResult {
 	return ValidAction
 }
 
-func createValidMoves(ball State, moves []Move) []Move {
-	var validMoves []Move
+func createValidMoves(ball types.State, moves []types.Move) []types.Move {
+	var validMoves []types.Move
 
 	for ind := 0; ind < 8; ind++ {
 		x := ball.X + dirX[ind]
 		y := ball.Y + dirY[ind]
-		validMove := Move{
+		validMove := types.Move{
 			A: ball,
-			B: State{
+			B: types.State{
 				X: x,
 				Y: y,
 			},
@@ -79,10 +81,10 @@ func createValidMoves(ball State, moves []Move) []Move {
 	return validMoves
 }
 
-func createPlaygroundAngles(moves []Move) [][]int {
-	var playground = make([][]int, HeightOfMap+1)
-	for i := 0; i < HeightOfMap+1; i++ {
-		playground[i] = make([]int, WidthOfMap+1)
+func createPlaygroundAngles(moves []types.Move) [][]int {
+	var playground = make([][]int, types.HeightOfMap+1)
+	for i := 0; i < types.HeightOfMap+1; i++ {
+		playground[i] = make([]int, types.WidthOfMap+1)
 	}
 
 	for _, move := range moves {
@@ -95,7 +97,7 @@ func createPlaygroundAngles(moves []Move) [][]int {
 	return playground
 }
 
-func isValidMove(move Move, validMoves []Move) bool {
+func isValidMove(move types.Move, validMoves []types.Move) bool {
 	for _, m := range validMoves {
 		if move.Equal(m) {
 			return true
@@ -104,7 +106,7 @@ func isValidMove(move Move, validMoves []Move) bool {
 	return false
 }
 
-func inStates(action Action, states []State) bool {
+func inStates(action types.Action, states []types.State) bool {
 	p := action.To
 	for _, s := range states {
 		if p.Equal(s) {
@@ -114,14 +116,14 @@ func inStates(action Action, states []State) bool {
 	return false
 }
 
-func isBlockedState(state State, playground [][]int) bool {
+func isBlockedState(state types.State, playground [][]int) bool {
 	if playground[state.X][state.Y] >= 7 {
 		return true
 	}
 	return false
 }
 
-func isValidActionWithPrice(state State, playground [][]int) bool {
+func isValidActionWithPrice(state types.State, playground [][]int) bool {
 	if playground[state.X][state.Y] > 0 {
 		return true
 	}

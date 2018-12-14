@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/alidadar7676/gimulator/simulator"
+	"github.com/alidadar7676/gimulator/types"
 )
 
 type Controller struct {
@@ -28,13 +29,13 @@ func (c *Controller) Run() {
 	watchingList := []simulator.Object{
 		simulator.Object{
 			Key: simulator.Key{
-				Type:      PlayerIntroType,
+				Type:      types.PlayerIntroType,
 				Namespace: c.Namespace,
 			},
 		},
 		simulator.Object{
 			Key: simulator.Key{
-				Type:      ActionType,
+				Type:      types.ActionType,
 				Namespace: c.Namespace,
 			},
 		},
@@ -58,10 +59,10 @@ func (c *Controller) Run() {
 
 func (c *Controller) reconcile(r simulator.Reconcile) error {
 	switch {
-	case r.Object.Type == PlayerIntroType:
+	case r.Object.Type == types.PlayerIntroType:
 		return c.playerJoined()
-	case r.Object.Type == ActionType:
-		r.Object.Struct(&Action{})
+	case r.Object.Type == types.ActionType:
+		r.Object.Struct(&types.Action{})
 		return c.playerActed(r.Object)
 	}
 	return nil
@@ -69,7 +70,7 @@ func (c *Controller) reconcile(r simulator.Reconcile) error {
 
 func (c *Controller) playerJoined() error {
 	worldKey := simulator.Key{
-		Type:      WorldType,
+		Type:      types.WorldType,
 		Name:      c.Name,
 		Namespace: c.Namespace,
 	}
@@ -82,7 +83,7 @@ func (c *Controller) playerJoined() error {
 	players, err := c.gimulator.Find(simulator.Object{
 		Key: simulator.Key{
 			Namespace: c.Namespace,
-			Type:      PlayerIntroType,
+			Type:      types.PlayerIntroType,
 		}})
 	if err != nil {
 		return err
@@ -95,10 +96,10 @@ func (c *Controller) playerJoined() error {
 	playerName1 := players[0].Name
 	playerName2 := players[1].Name
 
-	world := NewWorld(playerName1, playerName2)
+	world := types.NewWorld(playerName1, playerName2)
 	worldObject := simulator.Object{
 		Key: simulator.Key{
-			Type:      WorldType,
+			Type:      types.WorldType,
 			Name:      c.Name,
 			Namespace: c.Namespace,
 		},
@@ -114,7 +115,7 @@ func (c *Controller) playerJoined() error {
 }
 
 func (c *Controller) playerActed(actionObject simulator.Object) error {
-	action, ok := actionObject.Value.(Action)
+	action, ok := actionObject.Value.(types.Action)
 	if !ok {
 		return fmt.Errorf("type of %v is not Action", actionObject)
 	}
@@ -122,13 +123,13 @@ func (c *Controller) playerActed(actionObject simulator.Object) error {
 	worldKey := simulator.Key{
 		Name:      c.Name,
 		Namespace: c.Namespace,
-		Type:      WorldType,
+		Type:      types.WorldType,
 	}
 	worldObject := simulator.Object{}
 	if err := c.gimulator.Get(worldKey, &worldObject); err != nil {
 		return fmt.Errorf("can not get world: %v", err)
 	}
-	var world World
+	var world types.World
 	if err := worldObject.Struct(&world); err != nil {
 		return fmt.Errorf("type of %v is not world: %v", worldObject, err)
 	}

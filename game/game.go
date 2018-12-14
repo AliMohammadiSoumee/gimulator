@@ -1,6 +1,8 @@
 package game
 
-func Update(action Action, world World) World {
+import "github.com/alidadar7676/gimulator/types"
+
+func Update(action types.Action, world types.World) types.World {
 	const (
 		changeTurn = "otherPlayer"
 		fixedTurn  = "fixedTurn"
@@ -10,13 +12,13 @@ func Update(action Action, world World) World {
 	updateWorld := func(turnState string) {
 		world.BallPos = action.To
 		world.Moves = append(world.Moves,
-			Move{
+			types.Move{
 				A: action.From,
 				B: action.To,
 			})
 		switch turnState {
 		case changeTurn:
-			world.Turn = world.otherPlayer(action.PlayerName)
+			world.Turn = world.OtherPlayer(action.PlayerName)
 		case noTurn:
 			world.Turn = ""
 		}
@@ -26,7 +28,7 @@ func Update(action Action, world World) World {
 		return world
 	}
 
-	world.updateTimer(action.PlayerName)
+	world.UpdateTimer(action.PlayerName)
 
 	actionRes := Judge(action, world)
 	switch actionRes {
@@ -41,10 +43,10 @@ func Update(action Action, world World) World {
 		world.Winner = action.PlayerName
 	case LosingAction:
 		updateWorld(noTurn)
-		world.Winner = world.otherPlayer(action.PlayerName)
+		world.Winner = world.OtherPlayer(action.PlayerName)
 	}
 
-	world.setLastAction()
+	world.SetLastAction()
 
 	return world
 }

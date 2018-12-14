@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	"github.com/zserge/lorca"
+	"github.com/alidadar7676/gimulator/types"
 )
 
 const (
@@ -78,7 +79,7 @@ func main() {
 	}
 
 	drawer = worldDrawer{
-		World:  World{},
+		World:  types.World{},
 		width:  width(),
 		height: height(),
 	}

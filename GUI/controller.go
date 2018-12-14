@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/alidadar7676/gimulator/simulator"
+	"github.com/alidadar7676/gimulator/types"
 )
 
 type Controller struct {
@@ -26,14 +27,14 @@ func NewController(name, namespace string, gimulator simulator.Gimulator) *Contr
 func (c *Controller) Run() {
 	c.gimulator.Watch(simulator.Object{
 		Key: simulator.Key{
-			Type:      WorldType,
+			Type:      types.WorldType,
 			Namespace: c.Namespace,
 		},
 	}, c.watcher)
 
 	go func() {
 		for r := range c.watcher {
-			var world World
+			var world types.World
 			if err := r.Object.Struct(&world); err != nil {
 				log.Printf("object %v is not world\n", r.Object)
 				continue
@@ -43,7 +44,7 @@ func (c *Controller) Run() {
 	}()
 }
 
-func (c *Controller) watchWorld(world World) {
+func (c *Controller) watchWorld(world types.World) {
 	drawer.World = world
 	render(drawer)
 }

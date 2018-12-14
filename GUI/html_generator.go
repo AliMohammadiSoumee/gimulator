@@ -4,39 +4,40 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"github.com/alidadar7676/gimulator/types"
 )
 
 type worldDrawer struct {
-	World
+	types.World
 	width, height int
 }
 
 func (w worldDrawer) DrawField() string {
 	var (
 		html    = ""
-		delta   = min(w.width/(WidthOfMap+1), w.height/(HeightOfMap+1))
-		marginx = (w.width - delta*(WidthOfMap-1)) / 2
-		marginy = (w.height - delta*(HeightOfMap-1)) / 2
+		delta   = min(w.width/(types.WidthOfMap+1), w.height/(types.HeightOfMap+1))
+		marginx = (w.width - delta*(types.WidthOfMap-1)) / 2
+		marginy = (w.height - delta*(types.HeightOfMap-1)) / 2
 	)
 	fmt.Println(w.width, w.height)
 	fmt.Println(marginx, marginy)
 	fmt.Println(delta)
 
-	grid := make([][]State, WidthOfMap+1)
-	for i := 0; i < WidthOfMap+1; i++ {
-		grid[i] = make([]State, HeightOfMap+1)
+	grid := make([][]types.State, types.WidthOfMap+1)
+	for i := 0; i < types.WidthOfMap+1; i++ {
+		grid[i] = make([]types.State, types.HeightOfMap+1)
 	}
 
-	for x := 0; x < WidthOfMap; x++ {
-		for y := 0; y < HeightOfMap; y++ {
+	for x := 0; x < types.WidthOfMap; x++ {
+		for y := 0; y < types.HeightOfMap; y++ {
 			xx := marginx + x*delta
 			yy := marginy + y*delta
 			html += newCircle(xx, yy, 5, "yellow")
-			grid[x+1][y+1] = State{xx, yy}
+			grid[x+1][y+1] = types.State{xx, yy}
 		}
 	}
 
-	for _, move := range initMoves {
+	for _, move := range types.InitMoves {
 		html += newLine(grid[move.A.X][move.A.Y].X, grid[move.A.X][move.A.Y].Y, grid[move.B.X][move.B.Y].X, grid[move.B.X][move.B.Y].Y, "red")
 	}
 
@@ -44,20 +45,20 @@ func (w worldDrawer) DrawField() string {
 }
 
 func (w worldDrawer) genUpperSpec() (string, string) {
-	if w.Player1.Side.Pos == UpperPos {
+	if w.Player1.Side.Pos == types.UpperPos {
 		return w.Player1.Name, timeConverter(w.Player1.Duration)
 	}
-	if w.Player2.Side.Pos == UpperPos {
+	if w.Player2.Side.Pos == types.UpperPos {
 		return w.Player2.Name, timeConverter(w.Player2.Duration)
 	}
 	return "No Player", "00:00"
 }
 
 func (w worldDrawer) genLowerSpec() (string, string) {
-	if w.Player1.Side.Pos == LowerPos {
+	if w.Player1.Side.Pos == types.LowerPos {
 		return w.Player1.Name, timeConverter(w.Player1.Duration)
 	}
-	if w.Player2.Side.Pos == LowerPos {
+	if w.Player2.Side.Pos == types.LowerPos {
 		return w.Player2.Name, timeConverter(w.Player2.Duration)
 	}
 	return "No Player", "00:00"

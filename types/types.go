@@ -1,4 +1,4 @@
-package game
+package types
 
 import (
 	"math/rand"
@@ -43,7 +43,7 @@ func NewWorld(playerName1, playerName2 string) World {
 	world := World{
 		Width:      WidthOfMap,
 		Height:     HeightOfMap,
-		Moves:      initMoves,
+		Moves:      InitMoves,
 		Turn:       player1.Name,
 		BallPos:    State{X: 6, Y: 7},
 		Player1:    player1,
@@ -54,7 +54,7 @@ func NewWorld(playerName1, playerName2 string) World {
 	return world
 }
 
-func (w *World) updateTimer(playerName string) {
+func (w *World) UpdateTimer(playerName string) {
 	switch playerName {
 	case w.Player1.Name:
 		w.Player1.UpdateTimer(w.LastAction)
@@ -63,14 +63,14 @@ func (w *World) updateTimer(playerName string) {
 	}
 }
 
-func (w *World) otherPlayer(playerName string) string {
+func (w *World) OtherPlayer(playerName string) string {
 	if playerName == w.Player1.Name {
 		return w.Player2.Name
 	}
 	return w.Player1.Name
 }
 
-func (w *World) setLastAction() {
+func (w *World) SetLastAction() {
 	w.LastAction = time.Now()
 }
 
