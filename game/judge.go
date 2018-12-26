@@ -1,6 +1,8 @@
 package game
 
-import "github.com/alidadar7676/gimulator/types"
+import (
+	"github.com/alidadar7676/gimulator/types"
+)
 
 var (
 	dirX = []int{1, 1, 0, -1, -1, -1, 0, 1}
@@ -23,7 +25,7 @@ func Judge(action types.Action, world types.World) ActionResult {
 	}
 
 	validMoves := CreateValidMoves(world.BallPos, world.Moves)
-	playgroundAngs := createPlaygroundAngles(world.Moves)
+	playgroundAngs := CreatePlaygroundAngles(world.Moves)
 	playerMove := types.Move{
 		A: action.From,
 		B: action.To,
@@ -48,7 +50,7 @@ func Judge(action types.Action, world types.World) ActionResult {
 	if isBlockedState(action.To, playgroundAngs) {
 		return LosingAction
 	}
-	if isValidActionWithPrice(action.To, playgroundAngs) {
+	if IsValidActionWithPrice(action.To, playgroundAngs) {
 		return ValidActionWithPrice
 	}
 	return ValidAction
@@ -60,6 +62,9 @@ func CreateValidMoves(ball types.State, moves []types.Move) []types.Move {
 	for ind := 0; ind < 8; ind++ {
 		x := ball.X + dirX[ind]
 		y := ball.Y + dirY[ind]
+		if x < 1 || x > types.WidthOfMap || y < 1 || y > types.HeightOfMap {
+			continue
+		}
 		validMove := types.Move{
 			A: ball,
 			B: types.State{
@@ -81,7 +86,7 @@ func CreateValidMoves(ball types.State, moves []types.Move) []types.Move {
 	return validMoves
 }
 
-func createPlaygroundAngles(moves []types.Move) [][]int {
+func CreatePlaygroundAngles(moves []types.Move) [][]int {
 	var playground = make([][]int, types.WidthOfMap+1)
 	for i := 0; i < types.WidthOfMap+1; i++ {
 		playground[i] = make([]int, types.HeightOfMap+1)
@@ -123,7 +128,7 @@ func isBlockedState(state types.State, playground [][]int) bool {
 	return false
 }
 
-func isValidActionWithPrice(state types.State, playground [][]int) bool {
+func IsValidActionWithPrice(state types.State, playground [][]int) bool {
 	if playground[state.X][state.Y] > 0 {
 		return true
 	}

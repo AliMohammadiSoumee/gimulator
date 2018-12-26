@@ -1,6 +1,7 @@
 package types
 
 var (
+	//InitMoves = []Move{}
 	InitMoves = []Move{
 		{A: State{X: 1, Y: 9}, B: State{X: 2, Y: 10}},
 		{A: State{X: 2, Y: 9}, B: State{X: 2, Y: 10}},
@@ -208,7 +209,7 @@ var (
 		WinStates: []State{
 			{5, 1},
 			{6, 1},
-			{6, 1},
+			{7, 1},
 		},
 		LoseStates: []State{
 			{5, 13},
