@@ -60,7 +60,7 @@ func (c *Controller) Run() {
 }
 
 func (c *Controller) Act(world types.World) {
-	validMoves := game.CreateValidMoves(world.BallPos, world.Moves)
+	validMoves := game.createValidMoves(world.BallPos, world.Moves)
 	move := validMoves[rand.Intn(len(validMoves))]
 
 	actionObject := simulator.Object{

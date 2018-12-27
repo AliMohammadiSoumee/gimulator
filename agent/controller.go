@@ -57,13 +57,7 @@ func (c *Controller) Run() {
 }
 
 func (c *Controller) Act(world types.World) {
-	var agent *agent
-	if world.Player1.Name == c.Name {
-		agent = newAgent(world.Player1.Side.WinStates, world.Player1.Side.LoseStates, world.Moves)
-	} else {
-		agent = newAgent(world.Player2.Side.WinStates, world.Player2.Side.LoseStates, world.Moves)
-	}
-	move := agent.run(world.BallPos)
+	move := run(world, c.Name)
 
 	PrintMemory()
 

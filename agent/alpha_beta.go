@@ -1,67 +1,98 @@
 package agent
 
-import (
-	"github.com/alidadar7676/gimulator/types"
-)
-
 const (
 	inf = int(1e6)
 )
 
-type Node interface {
-	Neighbor() []Node
-	Equal(Node) bool
-	Heuristic() int
-	Hit(int, Node)
-	HasPrice() bool
-	GetPos() types.State
+
+func (gs *gameState) minimax(depth int) int {
+	return gs.max(depth)
 }
 
-func Minimax(node Node, depth int, isMax bool) int {
-	//log.Println(node.GetPos(), depth, isMax)
-
+func (gs *gameState) max(depth int) int {
 	if depth == 0 {
-		h := node.Heuristic()
-		node.Hit(h, nil)
-		//log.Println("depth = 0 ", node.GetPos(), h)
+		h := gs.heuristic()
+		gs.Hit(h, nil)
 		return h
 	}
 
-	if isMax {
-		value := -inf
-		var bestChild Node
-		for _, child := range node.Neighbor() {
-			mm := Minimax(child, depth-1, child.HasPrice())
-			if value < mm {
-				value = mm
-				bestChild = child
+	value := -inf
+	var bestChild *gameState
+
+	validMoves := gs.it.validMoves()
+
+	for _, mv := range validMoves {
+		gs.it.next(mv)
+		hash := gs.it.hash()
+
+		var mm int
+		child, ok := gs.it.hashTable[hash]
+		if ok {
+			mm = child.benefit
+		} else {
+			child := gameState{it: gs.it}
+			hasPrice := gs.it.hasPrice()
+			if hasPrice {
+				mm = child.max(depth-1)
+			} else {
+				mm = child.min(depth-1)
 			}
 		}
-
-		//log.Println(node.Neighbor())
-		//log.Println(bestChild)
-		if bestChild == nil {
-			value = node.Heuristic()
+		if value < mm {
+			value = mm
+			bestChild = child
 		}
-		//log.Println("max : ", node.GetPos(), bestChild.GetPos(), value)
-		node.Hit(value, bestChild)
-		return value
+		gs.it.prev(mv)
+	}
+
+	if bestChild == nil {
+		//TODO
+		value = gs.heuristic()
+	}
+	gs.Hit(value, bestChild)
+	return value
+}
+
+func (gs *gameState) min(depth int) int {
+	if depth == 0 {
+		h := gs.heuristic()
+		gs.Hit(h, nil)
+		return h
 	}
 
 	value := inf
-	var bestChild Node
-	for _, child := range node.Neighbor() {
-		mm := Minimax(child, depth-1, !child.HasPrice())
+	var bestChild *gameState
+
+	validMoves := gs.it.validMoves()
+
+	for _, mv := range validMoves {
+		gs.it.next(mv)
+		hash := gs.it.hash()
+
+		var mm int
+		child, ok := gs.it.hashTable[hash]
+		if ok {
+			mm = child.benefit
+		} else {
+			child := gameState{it: gs.it}
+			hasPrice := gs.it.hasPrice()
+			if hasPrice {
+				mm = child.min(depth-1)
+			} else {
+				mm = child.max(depth-1)
+			}
+		}
 		if value > mm {
 			value = mm
 			bestChild = child
 		}
+		gs.it.prev(mv)
 	}
-	if bestChild == nil {
-		value = node.Heuristic()
-	}
-	//log.Println("min : ", node.GetPos(), bestChild.GetPos(), value)
-	node.Hit(value, bestChild)
 
+	if bestChild == nil {
+		//TODO
+		value = gs.heuristic()
+	}
+	gs.Hit(value, bestChild)
 	return value
 }

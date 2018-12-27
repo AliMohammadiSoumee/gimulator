@@ -24,8 +24,8 @@ func Judge(action types.Action, world types.World) ActionResult {
 		return InvalidAction
 	}
 
-	validMoves := CreateValidMoves(world.BallPos, world.Moves)
-	playgroundAngs := CreatePlaygroundAngles(world.Moves)
+	validMoves := createValidMoves(world.BallPos, world.Moves)
+	playgroundAngs := createPlaygroundAngles(world.Moves)
 	playerMove := types.Move{
 		A: action.From,
 		B: action.To,
@@ -50,13 +50,13 @@ func Judge(action types.Action, world types.World) ActionResult {
 	if isBlockedState(action.To, playgroundAngs) {
 		return LosingAction
 	}
-	if IsValidActionWithPrice(action.To, playgroundAngs) {
+	if isValidActionWithPrice(action.To, playgroundAngs) {
 		return ValidActionWithPrice
 	}
 	return ValidAction
 }
 
-func CreateValidMoves(ball types.State, moves []types.Move) []types.Move {
+func createValidMoves(ball types.State, moves []types.Move) []types.Move {
 	var validMoves []types.Move
 
 	for ind := 0; ind < 8; ind++ {
@@ -86,7 +86,7 @@ func CreateValidMoves(ball types.State, moves []types.Move) []types.Move {
 	return validMoves
 }
 
-func CreatePlaygroundAngles(moves []types.Move) [][]int {
+func createPlaygroundAngles(moves []types.Move) [][]int {
 	var playground = make([][]int, types.WidthOfMap+1)
 	for i := 0; i < types.WidthOfMap+1; i++ {
 		playground[i] = make([]int, types.HeightOfMap+1)
@@ -128,7 +128,7 @@ func isBlockedState(state types.State, playground [][]int) bool {
 	return false
 }
 
-func IsValidActionWithPrice(state types.State, playground [][]int) bool {
+func isValidActionWithPrice(state types.State, playground [][]int) bool {
 	if playground[state.X][state.Y] > 0 {
 		return true
 	}
