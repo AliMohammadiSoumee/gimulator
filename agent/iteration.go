@@ -105,6 +105,7 @@ func newIteration(world types.World, name string) *iteration {
 		moveByte:   mb,
 		width:      world.Width,
 		height:     world.Height,
+		hashTable:  make(map[string]*gameState),
 	}
 }
 

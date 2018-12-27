@@ -43,13 +43,14 @@ func (gs *gameState) heuristic() int {
 }
 
 func run(world types.World, name string) types.Move {
-	depth := 7
+	depth := 10
 	it := newIteration(world, name)
 	root := &gameState{
 		it: it,
 		ball: world.BallPos,
 	}
-	root.minimax(depth)
+	//root.minimax(depth)
+	root.alphabeta(depth)
 
 	PrintMemory()
 
