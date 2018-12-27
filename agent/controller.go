@@ -59,8 +59,6 @@ func (c *Controller) Run() {
 func (c *Controller) Act(world types.World) {
 	move := run(world, c.Name)
 
-	PrintMemory()
-
 	actionObject := simulator.Object{
 		Key: simulator.Key{
 			Type:      types.ActionType,

@@ -2,7 +2,6 @@ package agent
 
 import (
 	"github.com/alidadar7676/gimulator/types"
-	"log"
 	"crypto/md5"
 	"encoding/base64"
 )
@@ -19,6 +18,8 @@ type iteration struct {
 	loseStates []types.State
 	playground [][]map[int]struct{}
 	hashTable map[string]*gameState
+	width     int
+	height    int
 }
 
 func (it *iteration) validMoves() []types.Move {
@@ -37,6 +38,9 @@ func (it *iteration) validMoves() []types.Move {
 		}
 		xx := x + dirx[i]
 		yy := y + diry[i]
+		if xx < 1 || xx > it.width || yy < 1 || yy > it.height {
+			continue
+		}
 		validMoves = append(validMoves, types.Move{
 			A: it.ball,
 			B: types.State{X: xx, Y: yy},
@@ -84,8 +88,10 @@ func newIteration(world types.World, name string) *iteration {
 	player := types.Player{}
 	if world.Player1.Name == name {
 		player = world.Player1
-	} else {
+	} else if world.Player2.Name == name {
 		player = world.Player2
+	} else {
+		panic("Daste Khar")
 	}
 
 	pg := newPlayground(world.Moves, world.Width, world.Height)
@@ -97,11 +103,13 @@ func newIteration(world types.World, name string) *iteration {
 		loseStates: player.Side.LoseStates,
 		playground: pg,
 		moveByte:   mb,
+		width:      world.Width,
+		height:     world.Height,
 	}
 }
 
 func newPlayground(moves []types.Move, width, height int) [][]map[int]struct{} {
-	log.Println("world size: ", width, height)
+
 
 	pg := make([][]map[int]struct{}, width+5)
 	for i := 0; i < width+5; i++ {
@@ -123,6 +131,7 @@ func newPlayground(moves []types.Move, width, height int) [][]map[int]struct{} {
 
 func getDirection(mv types.Move) (int, int) {
 
+	flag := false
 	var dira int
 	for i := 0; i < 8; i++ {
 		x := mv.A.X + dirx[i]
@@ -130,9 +139,16 @@ func getDirection(mv types.Move) (int, int) {
 
 		if x == mv.B.X && y == mv.B.Y {
 			dira = i
+			flag = true
 		}
 	}
 
+	if !flag {
+		panic("POOOF1")
+	}
+
+
+	flag = false
 	var dirb int
 	for i := 0; i < 8; i++ {
 		x := mv.B.X + dirx[i]
@@ -140,8 +156,13 @@ func getDirection(mv types.Move) (int, int) {
 
 		if x == mv.A.X && y == mv.A.Y {
 			dirb = i
+			flag = true
 		}
 	}
+	if !flag {
+		panic("POOOF2")
+	}
+
 
 	return dira, dirb
 }

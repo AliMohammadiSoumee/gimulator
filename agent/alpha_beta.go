@@ -1,5 +1,6 @@
 package agent
 
+
 const (
 	inf = int(1e6)
 )
@@ -10,10 +11,10 @@ func (gs *gameState) minimax(depth int) int {
 }
 
 func (gs *gameState) max(depth int) int {
-	if depth == 0 {
-		h := gs.heuristic()
-		gs.Hit(h, nil)
-		return h
+	heur := gs.heuristic()
+	if depth == 0 || heur <= -inf || heur >= inf {
+		gs.hit(heur, nil)
+		return heur
 	}
 
 	value := -inf
@@ -28,9 +29,10 @@ func (gs *gameState) max(depth int) int {
 		var mm int
 		child, ok := gs.it.hashTable[hash]
 		if ok {
+			panic("RIDI")
 			mm = child.benefit
 		} else {
-			child := gameState{it: gs.it}
+			child = &gameState{it: gs.it, ball: gs.it.ball}
 			hasPrice := gs.it.hasPrice()
 			if hasPrice {
 				mm = child.max(depth-1)
@@ -49,14 +51,14 @@ func (gs *gameState) max(depth int) int {
 		//TODO
 		value = gs.heuristic()
 	}
-	gs.Hit(value, bestChild)
+	gs.hit(value, bestChild)
 	return value
 }
 
 func (gs *gameState) min(depth int) int {
 	if depth == 0 {
 		h := gs.heuristic()
-		gs.Hit(h, nil)
+		gs.hit(h, nil)
 		return h
 	}
 
@@ -74,7 +76,7 @@ func (gs *gameState) min(depth int) int {
 		if ok {
 			mm = child.benefit
 		} else {
-			child := gameState{it: gs.it}
+			child = &gameState{it: gs.it, ball: gs.it.ball}
 			hasPrice := gs.it.hasPrice()
 			if hasPrice {
 				mm = child.min(depth-1)
@@ -93,6 +95,6 @@ func (gs *gameState) min(depth int) int {
 		//TODO
 		value = gs.heuristic()
 	}
-	gs.Hit(value, bestChild)
+	gs.hit(value, bestChild)
 	return value
 }
