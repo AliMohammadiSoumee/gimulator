@@ -2,6 +2,8 @@ package agent
 
 import (
 	"github.com/alidadar7676/gimulator/types"
+	"time"
+	"fmt"
 )
 
 
@@ -42,16 +44,33 @@ func (gs *gameState) heuristic(isMax bool) int {
 	return -dis
 }
 
-
+var (
+	lastDuration = time.Second * 2
+	lastDepth = 10
+)
 
 func run(world types.World, name string) types.Move {
-	depth := 11
+
 	it := newIteration(world, name)
 	root := &gameState{
 		it: it,
 		ball: world.BallPos,
 	}
+
+	var depth int
+	if lastDuration > time.Second * 1 {
+		depth = lastDepth - 1
+	} else if lastDuration < time.Millisecond * 200 {
+		depth = lastDepth + 1
+	} else {
+		depth = lastDepth
+	}
+
+	fmt.Println("Depth and time:", depth, lastDuration.Seconds(), lastDepth)
+	t := time.Now()
 	root.alphabeta(depth)
+	lastDuration = time.Now().Sub(t)
+	lastDepth = depth
 
 	PrintMemory()
 

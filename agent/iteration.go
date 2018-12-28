@@ -222,6 +222,7 @@ func newIteration(world types.World, name string) *iteration {
 	pg = newPlayground(world.Moves, world.Width, world.Height)
 	it.playground = pg
 
+	/*
 	for j := 1; j <= it.height; j++ {
 		for i := 1; i <= it.width; i++ {
 			fmt.Print(it.disWin[i][j], "\t")
@@ -236,6 +237,7 @@ func newIteration(world types.World, name string) *iteration {
 		fmt.Println()
 	}
 	fmt.Println("--------=================--------")
+	*/
 
 	return it
 }
