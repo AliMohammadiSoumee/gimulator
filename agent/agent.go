@@ -17,17 +17,21 @@ func (gs *gameState) hit(ben int, child *gameState) {
 	gs.bestChild = child
 }
 
-func (gs *gameState) heuristic() int {
-	for _, ws := range gs.it.winStates {
-		if ws.Equal(gs.ball) {
-			return inf
-		}
-	}
-
-	for _, ls := range gs.it.loseStates {
-		if ls.Equal(gs.ball) {
+func (gs *gameState) heuristic(isMax bool) int {
+	if gs.it.isBlockingState() {
+		return -inf
+		if isMax {
 			return -inf
 		}
+		return inf
+	}
+
+	if gs.it.isWinState() {
+		return inf
+	}
+
+	if gs.it.isLoseState() {
+		return -inf
 	}
 
 	abs := func(x int) int {
@@ -39,17 +43,18 @@ func (gs *gameState) heuristic() int {
 
 	targetPoint := gs.it.winStates[1]
 	a := abs(gs.ball.X-targetPoint.X) + abs(gs.ball.Y-targetPoint.Y)
-	return -a
+	return -a * -a * -a + gs.it.moveNum
 }
 
+
+
 func run(world types.World, name string) types.Move {
-	depth := 10
+	depth := 8
 	it := newIteration(world, name)
 	root := &gameState{
 		it: it,
 		ball: world.BallPos,
 	}
-	//root.minimax(depth)
 	root.alphabeta(depth)
 
 	PrintMemory()

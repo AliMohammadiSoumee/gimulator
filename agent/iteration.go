@@ -2,8 +2,6 @@ package agent
 
 import (
 	"github.com/alidadar7676/gimulator/types"
-	"crypto/md5"
-	"encoding/base64"
 )
 
 var (
@@ -12,7 +10,6 @@ var (
 )
 
 type iteration struct {
-	moveByte   []byte
 	ball       types.State
 	winStates  []types.State
 	loseStates []types.State
@@ -20,6 +17,7 @@ type iteration struct {
 	hashTable map[string]*gameState
 	width     int
 	height    int
+	moveNum   int
 }
 
 func (it *iteration) validMoves() []types.Move {
@@ -50,7 +48,7 @@ func (it *iteration) validMoves() []types.Move {
 }
 
 func (it *iteration) next(move types.Move) {
-	toggleMoveByte(it.moveByte, move)
+	it.moveNum++
 
 	da, db := getDirection(move)
 	it.playground[move.A.X][move.A.Y][da] = struct{}{}
@@ -60,7 +58,7 @@ func (it *iteration) next(move types.Move) {
 }
 
 func (it *iteration) prev(move types.Move) {
-	toggleMoveByte(it.moveByte, move)
+	it.moveNum--
 
 	da, db := getDirection(move)
 	delete(it.playground[move.A.X][move.A.Y], da)
@@ -69,17 +67,46 @@ func (it *iteration) prev(move types.Move) {
 	it.ball = move.A
 }
 
+/*
 func (it *iteration) hash() string {
 	a := md5.Sum(it.moveByte)
 	b := a[0:]
 	return base64.StdEncoding.EncodeToString(b)
 }
+*/
 
 func (it *iteration) hasPrice() bool {
 	x := it.ball.X
 	y := it.ball.Y
 	if len(it.playground[x][y]) > 1 {
 		return true
+	}
+	return false
+}
+
+func (it *iteration) isBlockingState() bool {
+	x := it.ball.X
+	y := it.ball.Y
+	if len(it.playground[x][y]) >= 8 {
+		return true
+	}
+	return false
+}
+
+func (it *iteration) isWinState() bool {
+	for _, ws := range it.winStates {
+		if ws.Equal(it.ball) {
+			return true
+		}
+	}
+	return false
+}
+
+func (it *iteration) isLoseState() bool {
+	for _, ws := range it.loseStates {
+		if ws.Equal(it.ball) {
+			return true
+		}
 	}
 	return false
 }
@@ -95,14 +122,12 @@ func newIteration(world types.World, name string) *iteration {
 	}
 
 	pg := newPlayground(world.Moves, world.Width, world.Height)
-	mb := newMoveByte(world.Moves)
 
 	return &iteration{
 		ball:       world.BallPos,
 		winStates:  player.Side.WinStates,
 		loseStates: player.Side.LoseStates,
 		playground: pg,
-		moveByte:   mb,
 		width:      world.Width,
 		height:     world.Height,
 		hashTable:  make(map[string]*gameState),

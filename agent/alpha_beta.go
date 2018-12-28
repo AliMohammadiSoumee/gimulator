@@ -1,5 +1,9 @@
 package agent
 
+import (
+	"log"
+)
+
 const (
 	inf = int(1e6)
 )
@@ -9,13 +13,14 @@ func (gs *gameState) alphabeta(depth int) int {
 }
 
 func (gs *gameState) max(depth, alpha, beta int) int {
-	heur := gs.heuristic()
+	heur := gs.heuristic(true)
 	if depth == 0 || heur <= -inf || heur >= inf {
+		log.Println(gs.ball, "nil", heur)
 		gs.hit(heur, nil)
 		return heur
 	}
 
-	value := -2 * inf
+	value := -3 * inf
 	var bestChild *gameState
 
 	validMoves := gs.it.validMoves()
@@ -27,41 +32,47 @@ func (gs *gameState) max(depth, alpha, beta int) int {
 		child := &gameState{it: gs.it, ball: gs.it.ball}
 		hasPrice := gs.it.hasPrice()
 		if hasPrice {
-			mm = child.max(depth-1, -inf, inf)
+			mm = child.max(depth-1, alpha, beta)
 		} else {
 			mm = child.min(depth-1, alpha, beta)
 		}
 		if value < mm {
 			value = mm
+			bestChild = child
 		}
 		if alpha < value {
 			alpha = value
-			bestChild = child
 		}
-		if alpha > beta {
+		if alpha >= beta {
 			gs.hit(value, bestChild)
 			gs.it.prev(mv)
-			return 2 * inf
+			return inf / 2
 		}
 		gs.it.prev(mv)
 	}
 
 	if bestChild == nil {
 		//TODO
-		value = gs.heuristic()
+		value = gs.heuristic(true)
+	}
+	if bestChild != nil {
+		log.Println(gs.ball, bestChild.ball, value)
+	} else {
+		log.Println(gs.ball, "nil", value)
 	}
 	gs.hit(value, bestChild)
 	return value
 }
 
 func (gs *gameState) min(depth, alpha, beta int) int {
-	if depth == 0 {
-		h := gs.heuristic()
-		gs.hit(h, nil)
-		return h
+	heur := gs.heuristic(false)
+	if depth == 0 || heur <= -inf || heur >= inf {
+		log.Println(gs.ball, "nil", heur)
+		gs.hit(heur, nil)
+		return heur
 	}
 
-	value := 2 * inf
+	value := 3 * inf
 	var bestChild *gameState
 
 	validMoves := gs.it.validMoves()
@@ -73,111 +84,34 @@ func (gs *gameState) min(depth, alpha, beta int) int {
 		child := &gameState{it: gs.it, ball: gs.it.ball}
 		hasPrice := gs.it.hasPrice()
 		if hasPrice {
-			mm = child.min(depth-1, -inf, inf)
+			mm = child.min(depth-1, alpha, beta)
 		} else {
 			mm = child.max(depth-1, alpha, beta)
 		}
 		if value > mm {
 			value = mm
+			bestChild = child
 		}
 		if beta > value {
 			beta = value
-			bestChild = child
 		}
-		if alpha > beta {
-			gs.it.prev(mv)
+		if alpha >= beta {
 			gs.hit(value, bestChild)
-			return -2 * inf
+			gs.it.prev(mv)
+			return -inf / 2
 		}
 		gs.it.prev(mv)
 	}
 
 	if bestChild == nil {
 		//TODO
-		value = gs.heuristic()
+		value = gs.heuristic(false)
+	}
+	if bestChild != nil {
+		log.Println(gs.ball, bestChild.ball, value)
+	} else {
+		log.Println(gs.ball, "nil", value)
 	}
 	gs.hit(value, bestChild)
 	return value
 }
-
-/*
-func (gs *gameState) minimax(depth int) int {
-	return gs.max(depth)
-}
-
-func (gs *gameState) max(depth int) int {
-	heur := gs.heuristic()
-	if depth == 0 || heur <= -inf || heur >= inf {
-		gs.hit(heur, nil)
-		return heur
-	}
-
-	value := -inf
-	var bestChild *gameState
-
-	validMoves := gs.it.validMoves()
-
-	for _, mv := range validMoves {
-		gs.it.next(mv)
-
-		var mm int
-		child := &gameState{it: gs.it, ball: gs.it.ball}
-		hasPrice := gs.it.hasPrice()
-		if hasPrice {
-			mm = child.max(depth-1)
-		} else {
-			mm = child.min(depth-1)
-		}
-		if value < mm {
-			value = mm
-			bestChild = child
-		}
-		gs.it.prev(mv)
-	}
-
-	if bestChild == nil {
-		//TODO
-		value = gs.heuristic()
-	}
-	gs.hit(value, bestChild)
-	return value
-}
-
-func (gs *gameState) min(depth int) int {
-	if depth == 0 {
-		h := gs.heuristic()
-		gs.hit(h, nil)
-		return h
-	}
-
-	value := inf
-	var bestChild *gameState
-
-	validMoves := gs.it.validMoves()
-
-	for _, mv := range validMoves {
-		gs.it.next(mv)
-
-		var mm int
-		child := &gameState{it: gs.it, ball: gs.it.ball}
-		hasPrice := gs.it.hasPrice()
-		if hasPrice {
-			mm = child.min(depth-1)
-		} else {
-			mm = child.max(depth-1)
-		}
-		if value > mm {
-			value = mm
-			bestChild = child
-		}
-		gs.it.prev(mv)
-	}
-
-	if bestChild == nil {
-		//TODO
-		value = gs.heuristic()
-	}
-	gs.hit(value, bestChild)
-	return value
-}
-*/
