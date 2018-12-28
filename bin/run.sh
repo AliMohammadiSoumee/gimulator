@@ -10,11 +10,9 @@ echo "Starting Judge..."
 JUDGE_PID=$!
 sleep 0.3
 
-#echo "Starting random agent..."
-#./agent_amd64 127.0.0.1:7575 Agent01 1> log1.txt & 
-#RND_PID=$!
-
-#sleep 1
+echo "Starting random agent..."
+./agent_amd64 0.0.0.0:7575 Agent01 & #1> log1.txt & 
+RND_PID=$!
 
 echo "Starting random agent..."
 ./agent_amd64 0.0.0.0:7575 Agent02 & #2> log2.txt & 

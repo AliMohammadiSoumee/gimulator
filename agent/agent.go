@@ -3,7 +3,6 @@ package agent
 import (
 	"github.com/alidadar7676/gimulator/types"
 	"time"
-	"fmt"
 )
 
 
@@ -35,18 +34,13 @@ func (gs *gameState) heuristic(isMax bool) int {
 		return -inf
 	}
 
-	a := gs.it.disWin[gs.ball.X][gs.ball.Y]
-	//b := gs.it.disLose[gs.ball.X][gs.ball.Y]
-
-	return -a * a + gs.it.moveNum
-
-	dis := gs.it.distanceFromWinStates()
-	return -dis
+	a := gs.it.disWin[gs.ball.X][gs.ball.Y] + 2
+	return -a*a + gs.it.layer
 }
 
 var (
-	lastDuration = time.Second * 2
-	lastDepth = 10
+	lastDuration = time.Second
+	lastDepth    = 10
 )
 
 func run(world types.World, name string) types.Move {
@@ -58,24 +52,27 @@ func run(world types.World, name string) types.Move {
 	}
 
 	var depth int
-	if lastDuration > time.Second * 1 {
+	if lastDuration > time.Millisecond * 1700 {
+		depth = lastDepth - 2
+	} else if lastDuration > time.Second * 1 {
 		depth = lastDepth - 1
-	} else if lastDuration < time.Millisecond * 200 {
+	} else if lastDuration < time.Millisecond * 400 {
 		depth = lastDepth + 1
 	} else {
 		depth = lastDepth
 	}
 
-	fmt.Println("Depth and time:", depth, lastDuration.Seconds(), lastDepth)
+	//fmt.Println(depth, lastDuration.Seconds(), len(world.Moves))
 	t := time.Now()
 	root.alphabeta(depth)
 	lastDuration = time.Now().Sub(t)
 	lastDepth = depth
 
-	PrintMemory()
+	//PrintMemory()
 
-	return types.Move{
+	ans := types.Move{
 		A: root.ball,
 		B: root.bestChild.ball,
 	}
+	return ans
 }

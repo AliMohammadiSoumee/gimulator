@@ -2,7 +2,6 @@ package agent
 
 import (
 	"github.com/alidadar7676/gimulator/types"
-	"fmt"
 )
 
 var (
@@ -18,7 +17,7 @@ type iteration struct {
 	hashTable map[string]*gameState
 	width     int
 	height    int
-	moveNum   int
+	layer     int
 	disWin    [][]int
 	disLose   [][]int
 }
@@ -55,7 +54,7 @@ func (it *iteration) validMovesWithState(state types.State) []types.Move {
 }
 
 func (it *iteration) next(move types.Move) {
-	it.moveNum++
+	it.layer++
 
 	da, db := getDirection(move)
 	it.playground[move.A.X][move.A.Y][da] = struct{}{}
@@ -65,7 +64,7 @@ func (it *iteration) next(move types.Move) {
 }
 
 func (it *iteration) prev(move types.Move) {
-	it.moveNum--
+	it.layer--
 
 	da, db := getDirection(move)
 	delete(it.playground[move.A.X][move.A.Y], da)
@@ -73,14 +72,6 @@ func (it *iteration) prev(move types.Move) {
 
 	it.ball = move.A
 }
-
-/*
-func (it *iteration) hash() string {
-	a := md5.Sum(it.moveByte)
-	b := a[0:]
-	return base64.StdEncoding.EncodeToString(b)
-}
-*/
 
 func (it *iteration) hasPrice() bool {
 	x := it.ball.X
@@ -118,6 +109,7 @@ func (it *iteration) isLoseState() bool {
 	return false
 }
 
+/*
 func (it *iteration) distanceFromWinStates() int {
 	var val = 0
 	abs := func(x int) int {
@@ -135,6 +127,8 @@ func (it *iteration) distanceFromWinStates() int {
 	}
 	return val
 }
+*/
+
 
 type node struct {
 	state  types.State
@@ -184,6 +178,31 @@ func (it *iteration) bfs(states []types.State, dp [][]int) {
 	}
 }
 
+/*
+func (it *iteration) checkMap() {
+	for i := 0; i < it.width+1; i++ {
+		for j := 0; j < it.height+1; j++ {
+			it.mark[i][j] = false
+		}
+	}
+	it.dfs()
+}
+
+func (it *iteration) dfs() {
+	if it.mark[it.ball.X][it.ball.Y] {
+		return
+	}
+	it.mark[it.ball.X][it.ball.Y] = true
+
+	valids := it.validMoves()
+	for _, mv := range valids {
+		it.next(mv)
+		it.dfs()
+		it.prev(mv)
+	}
+}
+*/
+
 func newIteration(world types.World, name string) *iteration {
 	player := types.Player{}
 	if world.Player1.Name == name {
@@ -204,6 +223,10 @@ func newIteration(world types.World, name string) *iteration {
 	for i := 0; i < world.Width+5; i++ {
 		disLose[i] = make([]int, world.Height+5)
 	}
+	mark := make([][]bool, world.Width+5)
+	for i := 0; i < world.Width+5; i++ {
+		mark[i] = make([]bool, world.Height+5)
+	}
 
 	it := &iteration{
 		ball:       world.BallPos,
@@ -215,6 +238,7 @@ func newIteration(world types.World, name string) *iteration {
 		hashTable:  make(map[string]*gameState),
 		disWin:     disWin,
 		disLose:    disLose,
+		layer:      0,
 	}
 	it.bfs(it.winStates, it.disWin)
 	it.bfs(it.loseStates, it.disLose)
@@ -299,6 +323,7 @@ func getDirection(mv types.Move) (int, int) {
 	return dira, dirb
 }
 
+/*
 func newMoveByte(moves []types.Move) []byte {
 	moveByte := make([]byte, 200)
 	for _, mv := range moves {
@@ -342,3 +367,4 @@ func moveToInt(move types.Move) uint {
 	}
 	return num
 }
+*/
