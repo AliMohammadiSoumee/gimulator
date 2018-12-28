@@ -111,6 +111,24 @@ func (it *iteration) isLoseState() bool {
 	return false
 }
 
+func (it *iteration) distanceFromWinStates() int {
+	var val = 0
+	abs := func(x int) int {
+		if x < 0 {
+			return -x
+		}
+		return x
+	}
+
+	for _, win := range it.winStates {
+		a := abs(it.ball.X-win.X) + abs(it.ball.Y-win.Y)
+		if a > val {
+			val = a
+		}
+	}
+	return val
+}
+
 func newIteration(world types.World, name string) *iteration {
 	player := types.Player{}
 	if world.Player1.Name == name {

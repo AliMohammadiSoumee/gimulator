@@ -9,10 +9,10 @@ const (
 )
 
 func (gs *gameState) alphabeta(depth int) int {
-	return gs.max(depth, -inf, inf)
+	return gs.max(depth, -inf, inf, false)
 }
 
-func (gs *gameState) max(depth, alpha, beta int) int {
+func (gs *gameState) max(depth, alpha, beta int, isParMax bool) int {
 	heur := gs.heuristic(true)
 	if depth == 0 || heur <= -inf || heur >= inf {
 		log.Println(gs.ball, "nil", heur)
@@ -32,9 +32,9 @@ func (gs *gameState) max(depth, alpha, beta int) int {
 		child := &gameState{it: gs.it, ball: gs.it.ball}
 		hasPrice := gs.it.hasPrice()
 		if hasPrice {
-			mm = child.max(depth-1, alpha, beta)
+			mm = child.max(depth-1, alpha, beta, true)
 		} else {
-			mm = child.min(depth-1, alpha, beta)
+			mm = child.min(depth-1, alpha, beta, true)
 		}
 		if value < mm {
 			value = mm
@@ -46,6 +46,9 @@ func (gs *gameState) max(depth, alpha, beta int) int {
 		if alpha >= beta {
 			gs.hit(value, bestChild)
 			gs.it.prev(mv)
+			if isParMax {
+				return -inf / 2
+			}
 			return inf / 2
 		}
 		gs.it.prev(mv)
@@ -64,7 +67,7 @@ func (gs *gameState) max(depth, alpha, beta int) int {
 	return value
 }
 
-func (gs *gameState) min(depth, alpha, beta int) int {
+func (gs *gameState) min(depth, alpha, beta int, isParMax bool) int {
 	heur := gs.heuristic(false)
 	if depth == 0 || heur <= -inf || heur >= inf {
 		log.Println(gs.ball, "nil", heur)
@@ -84,9 +87,9 @@ func (gs *gameState) min(depth, alpha, beta int) int {
 		child := &gameState{it: gs.it, ball: gs.it.ball}
 		hasPrice := gs.it.hasPrice()
 		if hasPrice {
-			mm = child.min(depth-1, alpha, beta)
+			mm = child.min(depth-1, alpha, beta, false)
 		} else {
-			mm = child.max(depth-1, alpha, beta)
+			mm = child.max(depth-1, alpha, beta, false)
 		}
 		if value > mm {
 			value = mm
@@ -98,7 +101,10 @@ func (gs *gameState) min(depth, alpha, beta int) int {
 		if alpha >= beta {
 			gs.hit(value, bestChild)
 			gs.it.prev(mv)
-			return -inf / 2
+			if isParMax {
+				return -inf / 2
+			}
+			return inf / 2
 		}
 		gs.it.prev(mv)
 	}
