@@ -1,9 +1,5 @@
 package agent
 
-import (
-	"log"
-)
-
 const (
 	inf = int(1e6)
 )
@@ -15,7 +11,6 @@ func (gs *gameState) alphabeta(depth int) int {
 func (gs *gameState) max(depth, alpha, beta int, isParMax bool) int {
 	heur := gs.heuristic(true)
 	if depth == 0 || heur <= -inf || heur >= inf {
-		log.Println(gs.ball, "nil", heur)
 		gs.hit(heur, nil)
 		return heur
 	}
@@ -43,25 +38,15 @@ func (gs *gameState) max(depth, alpha, beta int, isParMax bool) int {
 		if alpha < value {
 			alpha = value
 		}
-		if alpha >= beta {
-			gs.hit(value, bestChild)
-			gs.it.prev(mv)
-			if isParMax {
-				return -inf / 2
-			}
-			return inf / 2
-		}
 		gs.it.prev(mv)
+		if alpha > beta {
+			break
+		}
 	}
 
 	if bestChild == nil {
 		//TODO
-		value = gs.heuristic(true)
-	}
-	if bestChild != nil {
-		log.Println(gs.ball, bestChild.ball, value)
-	} else {
-		log.Println(gs.ball, "nil", value)
+		value = heur
 	}
 	gs.hit(value, bestChild)
 	return value
@@ -70,7 +55,6 @@ func (gs *gameState) max(depth, alpha, beta int, isParMax bool) int {
 func (gs *gameState) min(depth, alpha, beta int, isParMax bool) int {
 	heur := gs.heuristic(false)
 	if depth == 0 || heur <= -inf || heur >= inf {
-		log.Println(gs.ball, "nil", heur)
 		gs.hit(heur, nil)
 		return heur
 	}
@@ -98,25 +82,15 @@ func (gs *gameState) min(depth, alpha, beta int, isParMax bool) int {
 		if beta > value {
 			beta = value
 		}
-		if alpha >= beta {
-			gs.hit(value, bestChild)
-			gs.it.prev(mv)
-			if isParMax {
-				return -inf / 2
-			}
-			return inf / 2
-		}
 		gs.it.prev(mv)
+		if alpha > beta {
+			break
+		}
 	}
 
 	if bestChild == nil {
 		//TODO
 		value = gs.heuristic(false)
-	}
-	if bestChild != nil {
-		log.Println(gs.ball, bestChild.ball, value)
-	} else {
-		log.Println(gs.ball, "nil", value)
 	}
 	gs.hit(value, bestChild)
 	return value

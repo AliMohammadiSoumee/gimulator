@@ -2,7 +2,6 @@ package agent
 
 import (
 	"github.com/alidadar7676/gimulator/types"
-	"time"
 )
 
 
@@ -34,15 +33,19 @@ func (gs *gameState) heuristic(isMax bool) int {
 		return -inf
 	}
 
+	a := gs.it.disWin[gs.ball.X][gs.ball.Y]
+	//b := gs.it.disLose[gs.ball.X][gs.ball.Y]
+
+	return -a * a + gs.it.moveNum
+
 	dis := gs.it.distanceFromWinStates()
-	return -dis * dis + gs.it.moveNum
+	return -dis
 }
 
 
 
 func run(world types.World, name string) types.Move {
-	time.Sleep(time.Millisecond * 100)
-	depth := 4
+	depth := 11
 	it := newIteration(world, name)
 	root := &gameState{
 		it: it,

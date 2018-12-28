@@ -2,6 +2,7 @@ package agent
 
 import (
 	"github.com/alidadar7676/gimulator/types"
+	"fmt"
 )
 
 var (
@@ -18,12 +19,18 @@ type iteration struct {
 	width     int
 	height    int
 	moveNum   int
+	disWin    [][]int
+	disLose   [][]int
 }
 
 func (it *iteration) validMoves() []types.Move {
+	return it.validMovesWithState(it.ball)
+}
+
+func (it *iteration) validMovesWithState(state types.State) []types.Move {
 	validMoves := make([]types.Move, 0)
-	x := it.ball.X
-	y := it.ball.Y
+	x := state.X
+	y := state.Y
 
 	exist := make([]bool, 10)
 	for i := range it.playground[x][y] {
@@ -40,7 +47,7 @@ func (it *iteration) validMoves() []types.Move {
 			continue
 		}
 		validMoves = append(validMoves, types.Move{
-			A: it.ball,
+			A: state,
 			B: types.State{X: xx, Y: yy},
 		})
 	}
@@ -129,6 +136,54 @@ func (it *iteration) distanceFromWinStates() int {
 	return val
 }
 
+type node struct {
+	state  types.State
+	height int
+}
+
+func (it *iteration) bfs(states []types.State, dp [][]int) {
+	mark := make([][]bool, it.width+5)
+	for i := 0; i < it.width+5; i++ {
+		mark[i] = make([]bool, it.height+5)
+	}
+
+	for i := 0; i < it.width+2; i++ {
+		for j := 0; j < it.height+2; j++ {
+			dp[i][j] = 30
+			mark[i][j] = false
+		}
+	}
+
+	que := make(chan node, 10000)
+	for _, state := range states {
+		que <- node{state: state, height: 0}
+	}
+
+	for len(que) > 0 {
+		head := <-que
+		/*
+		if mark[head.state.X][head.state.Y] {
+			continue
+		}
+		mark[head.state.X][head.state.Y] = true
+		*/
+		if dp[head.state.X][head.state.Y] <= head.height {
+			continue
+		}
+		dp[head.state.X][head.state.Y] = head.height
+
+		validMoves := it.validMovesWithState(head.state)
+		for _, mv := range validMoves {
+			x := mv.B.X
+			y := mv.B.Y
+			if mark[x][y] {
+				continue
+			}
+			que <- node{state: mv.B, height: head.height + 1}
+		}
+	}
+}
+
 func newIteration(world types.World, name string) *iteration {
 	player := types.Player{}
 	if world.Player1.Name == name {
@@ -139,9 +194,18 @@ func newIteration(world types.World, name string) *iteration {
 		panic("Daste Khar")
 	}
 
-	pg := newPlayground(world.Moves, world.Width, world.Height)
+	pg := newPlayground(types.InitMoves, world.Width, world.Height)
 
-	return &iteration{
+	disWin := make([][]int, world.Width+5)
+	for i := 0; i < world.Width+5; i++ {
+		disWin[i] = make([]int, world.Height+5)
+	}
+	disLose := make([][]int, world.Width+5)
+	for i := 0; i < world.Width+5; i++ {
+		disLose[i] = make([]int, world.Height+5)
+	}
+
+	it := &iteration{
 		ball:       world.BallPos,
 		winStates:  player.Side.WinStates,
 		loseStates: player.Side.LoseStates,
@@ -149,12 +213,34 @@ func newIteration(world types.World, name string) *iteration {
 		width:      world.Width,
 		height:     world.Height,
 		hashTable:  make(map[string]*gameState),
+		disWin:     disWin,
+		disLose:    disLose,
 	}
+	it.bfs(it.winStates, it.disWin)
+	it.bfs(it.loseStates, it.disLose)
+
+	pg = newPlayground(world.Moves, world.Width, world.Height)
+	it.playground = pg
+
+	for j := 1; j <= it.height; j++ {
+		for i := 1; i <= it.width; i++ {
+			fmt.Print(it.disWin[i][j], "\t")
+		}
+		fmt.Println()
+	}
+	fmt.Println("----------------")
+	for j := 1; j <= it.height; j++ {
+		for i := 1; i <= it.width; i++ {
+			fmt.Print(it.disLose[i][j], "\t")
+		}
+		fmt.Println()
+	}
+	fmt.Println("--------=================--------")
+
+	return it
 }
 
 func newPlayground(moves []types.Move, width, height int) [][]map[int]struct{} {
-
-
 	pg := make([][]map[int]struct{}, width+5)
 	for i := 0; i < width+5; i++ {
 		pg[i] = make([]map[int]struct{}, height+5)

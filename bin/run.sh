@@ -1,27 +1,27 @@
 #!/bin/sh
 
 echo "Starting simulator..."
-./simulator_amd64 127.0.0.1:7575 2> /dev/null &
+./simulator_amd64 0.0.0.0:7575 2> /dev/null &
 SIM_PID=$!
 sleep 0.3
 
 echo "Starting Judge..."
-./game_amd64 127.0.0.1:7575 2> /dev/null & 
+./game_amd64 0.0.0.0:7575 2> /dev/null & 
 JUDGE_PID=$!
 sleep 0.3
 
-echo "Starting random agent..."
-./agent_amd64 127.0.0.1:7575 Agent01 2> log1.txt & 
-RND_PID=$!
+#echo "Starting random agent..."
+#./agent_amd64 127.0.0.1:7575 Agent01 1> log1.txt & 
+#RND_PID=$!
 
 #sleep 1
 
 echo "Starting random agent..."
-./agent_amd64 127.0.0.1:7575 Agent02 2> log2.txt & 
+./agent_amd64 0.0.0.0:7575 Agent02 & #2> log2.txt & 
 RNDD_PID=$!
 
 echo "Start GUI..."
-./gui_amd64 127.0.0.1:7575 2> /dev/null
+./gui_amd64 0.0.0.0:7575 2> /dev/null
 
 echo 'DONE...'
 echo 'Closing all:'
